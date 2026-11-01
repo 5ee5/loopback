@@ -8,7 +8,9 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
-export const MEMBER_STATUSES = ["active", "inactive", "suspended"] as const;
+// "setup": approved and being set up. Shown as a loading card, but not yet part of
+// the ring (skipped by navigation and the public API) until marked live.
+export const MEMBER_STATUSES = ["active", "setup", "inactive", "suspended"] as const;
 export type MemberStatus = (typeof MEMBER_STATUSES)[number];
 
 export const rings = sqliteTable(
@@ -87,7 +89,10 @@ export const members = sqliteTable(
       // hence the coalesce.
       sql`${t.joinedAt} GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND coalesce(date(${t.joinedAt}) = ${t.joinedAt}, 0)`,
     ),
-    check("members_status_valid", sql`${t.status} IN ('active', 'inactive', 'suspended')`),
+    check(
+      "members_status_valid",
+      sql`${t.status} IN ('active', 'setup', 'inactive', 'suspended')`,
+    ),
     check(
       "members_tags",
       sql`json_valid(${t.tags}) AND json_type(${t.tags}) = 'array' AND json_array_length(${t.tags}) <= 5`,
@@ -104,3 +109,82 @@ export const members = sqliteTable(
 );
 
 export type MemberRow = typeof members.$inferSelect;
+
+export const APPLICATION_STATUSES = ["pending", "approved", "rejected"] as const;
+export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
+
+/**
+ * Membership applications. `contact_email` is personal data: it is only ever
+ * read by the admin pages, never copied to `members` and never in a public API.
+ * It is nullable so it can be purged once the applicant has been answered.
+ */
+export const applications = sqliteTable(
+  "applications",
+  {
+    id: text("id")
+      .primaryKey()
+      .default(sql`('a_' || lower(hex(randomblob(4))))`),
+    ringId: text("ring_id")
+      .notNull()
+      .references(() => rings.id, { onDelete: "restrict" }),
+    displayName: text("display_name").notNull(),
+    url: text("url").notNull(),
+    description: text("description").notNull().default(""),
+    tags: text("tags", { mode: "json" })
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'`),
+    contactEmail: text("contact_email"),
+    status: text("status", { enum: APPLICATION_STATUSES })
+      .notNull()
+      .default("pending"),
+    submittedAt: integer("submitted_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    decidedAt: integer("decided_at", { mode: "timestamp" }),
+    // Admin user id (Better Auth) who decided it.
+    decidedBy: text("decided_by"),
+    // Internal note. Never shown to the applicant or publicly.
+    decisionNote: text("decision_note"),
+    // The member created on approval; cleared if that member is later deleted.
+    memberId: text("member_id").references(() => members.id, {
+      onDelete: "set null",
+    }),
+  },
+  (t) => [
+    // At most one waiting application per site.
+    uniqueIndex("applications_one_pending_per_url")
+      .on(t.ringId, t.url)
+      .where(sql`${t.status} = 'pending'`),
+    index("applications_status_order").on(t.status, t.submittedAt),
+    check(
+      "applications_url_http",
+      sql`(${t.url} LIKE 'http://_%' OR ${t.url} LIKE 'https://_%') AND length(${t.url}) <= 2048 AND instr(${t.url}, ' ') = 0 AND instr(${t.url}, char(9)) = 0 AND instr(${t.url}, char(10)) = 0 AND instr(${t.url}, char(13)) = 0`,
+    ),
+    check("applications_name_length", sql`length(trim(${t.displayName})) BETWEEN 1 AND 60`),
+    check("applications_description_length", sql`length(${t.description}) <= 160`),
+    check(
+      "applications_tags",
+      sql`json_valid(${t.tags}) AND json_type(${t.tags}) = 'array' AND json_array_length(${t.tags}) <= 5`,
+    ),
+    check(
+      "applications_status_valid",
+      sql`${t.status} IN ('pending', 'approved', 'rejected')`,
+    ),
+    // A CHECK that evaluates to NULL passes, so every branch here is NULL-safe.
+    check(
+      "applications_email",
+      sql`${t.contactEmail} IS NULL OR (length(${t.contactEmail}) BETWEEN 3 AND 254 AND instr(${t.contactEmail}, ' ') = 0 AND instr(${t.contactEmail}, '@') > 1 AND instr(substr(${t.contactEmail}, instr(${t.contactEmail}, '@') + 1), '@') = 0 AND instr(substr(${t.contactEmail}, instr(${t.contactEmail}, '@') + 1), '.') > 1)`,
+    ),
+    check(
+      "applications_pending_has_email",
+      sql`${t.status} <> 'pending' OR ${t.contactEmail} IS NOT NULL`,
+    ),
+    check(
+      "applications_decided_consistency",
+      sql`(${t.status} = 'pending' AND ${t.decidedAt} IS NULL) OR (${t.status} <> 'pending' AND ${t.decidedAt} IS NOT NULL)`,
+    ),
+  ],
+);
+
+export type ApplicationRow = typeof applications.$inferSelect;

@@ -9,3 +9,7 @@ INSERT OR IGNORE INTO members (id, ring_id, display_name, url, description, join
   ('m_s7t8u9', 'main', 'Noor Haddad',     'https://noor.example.net',  'Typography, lettering and the occasional rant.', '2026-04-09', 'active',    '["design","writing"]',         '#d9c58a'),
   ('m_v1w2x3', 'main', 'Rowan Pike',      'https://rowan.example.com', 'Field recordings and homemade synths.',          '2026-05-02', 'suspended', '["music"]',                    NULL),
   ('m_y4z5a6', 'main', 'Inés Valdivia',   'https://ines.example.org',  'Bike repair guides and route notes.',            '2026-05-27', 'active',    '["cycling","guides"]',         '#8fb8ac');
+
+-- A member who has been approved and is still being set up (shown as a loading card).
+INSERT OR IGNORE INTO members (id, ring_id, display_name, url, description, joined_at, status, tags, accent_color) VALUES
+  ('m_z9y8x7w6', 'main', 'Leo Marsh', 'https://leo.example.net', 'Zines, stickers and a very small shop.', '2026-06-10', 'setup', '["zines"]', NULL);

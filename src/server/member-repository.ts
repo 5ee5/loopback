@@ -4,7 +4,7 @@ import { getDb } from "@/db/client";
 import { toMember } from "@/db/mappers";
 import { members } from "@/db/schema";
 import { DEFAULT_RING_ID } from "@/config/site";
-import { activeMembers } from "@/domain/ring";
+import { activeMembers, visibleMembers } from "@/domain/ring";
 import { isActive, type Member } from "@/domain/member";
 
 /**
@@ -33,6 +33,13 @@ export async function listActiveMembers(
   ringId: string = DEFAULT_RING_ID,
 ): Promise<Member[]> {
   return activeMembers(await listAllMembers(ringId), ringId);
+}
+
+/** Active members plus those still being set up (homepage only), in ring order. */
+export async function listVisibleMembers(
+  ringId: string = DEFAULT_RING_ID,
+): Promise<Member[]> {
+  return visibleMembers(await listAllMembers(ringId), ringId);
 }
 
 /** Active member by id, or null. Inactive/suspended members are not public. */

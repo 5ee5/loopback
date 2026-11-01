@@ -98,6 +98,10 @@ describe("members table", () => {
     expect(insert({ ring_id: "other" })).toBeTruthy();
   });
 
+  it("accepts the setup status", () => {
+    expect(insert({ status: "setup" }).status).toBe("setup");
+  });
+
   it("accepts an upper-case hex accent colour, tags and an https avatar", () => {
     const row = insert({ accent_color: "#4ADE80", tags: JSON.stringify(["a", "b"]), avatar_url: "https://a.example.com/x.png" });
     expect(JSON.parse(row.tags as string)).toEqual(["a", "b"]);
@@ -117,10 +121,91 @@ describe("rings table", () => {
 });
 
 describe("dev seed", () => {
-  it("loads 8 fictional members, all on reserved example domains", () => {
+  it("loads 9 fictional members, all on reserved example domains", () => {
     const rows = db.prepare("SELECT url, status FROM members ORDER BY joined_at").all() as { url: string; status: string }[];
-    expect(rows).toHaveLength(8);
+    expect(rows).toHaveLength(9);
     for (const r of rows) expect(new URL(r.url).hostname).toMatch(/\.example\.(com|org|net)$/);
-    expect(new Set(rows.map((r) => r.status))).toEqual(new Set(["active", "inactive", "suspended"]));
+    expect(new Set(rows.map((r) => r.status))).toEqual(new Set(["active", "setup", "inactive", "suspended"]));
+  });
+});
+
+const appBase = {
+  ring_id: "main",
+  display_name: "Applicant",
+  url: "https://applicant.example.com",
+  description: "",
+  contact_email: "applicant@example.com",
+};
+
+function insertApplication(overrides: Record<string, unknown> = {}, omit: string[] = []) {
+  const row: Record<string, unknown> = { ...appBase, ...overrides };
+  for (const key of omit) delete row[key];
+  const cols = Object.keys(row);
+  return db
+    .prepare(`INSERT INTO applications (${cols.join(",")}) VALUES (${cols.map((c) => `@${c}`).join(",")}) RETURNING *`)
+    .get(row) as Record<string, unknown>;
+}
+
+describe("applications table", () => {
+  it("accepts a valid application: pending by default, generated id, submission time", () => {
+    const row = insertApplication();
+    expect(row.id).toMatch(/^a_[0-9a-f]{8}$/);
+    expect(row.status).toBe("pending");
+    expect(row.decided_at).toBeNull();
+    expect(row.submitted_at).toBeTruthy();
+    expect(row.tags).toBe("[]");
+  });
+
+  it.each([
+    ["a javascript: url", { url: "javascript:alert(1)" }, "applications_url_http"],
+    ["a url with a space", { url: "https://a.example.com/a b" }, "applications_url_http"],
+    ["a blank name", { display_name: "  " }, "applications_name_length"],
+    ["a 161-character description", { description: "x".repeat(161) }, "applications_description_length"],
+    ["six tags", { tags: JSON.stringify(["a", "b", "c", "d", "e", "f"]) }, "applications_tags"],
+    ["tags that aren't JSON", { tags: "nope" }, "applications_tags"],
+    ["an unknown status", { status: "maybe" }, "applications_status_valid"],
+    ["an email without an @", { contact_email: "nope" }, "applications_email"],
+    ["an email with two @", { contact_email: "a@b@c.co" }, "applications_email"],
+    ["an email with a space", { contact_email: "a b@c.co" }, "applications_email"],
+    ["an email with no dot in the domain", { contact_email: "a@localhost" }, "applications_email"],
+    ["an over-long email", { contact_email: `${"x".repeat(250)}@b.co` }, "applications_email"],
+    ["an unknown ring", { ring_id: "nope" }, "SQLITE_CONSTRAINT_FOREIGNKEY"],
+  ])("rejects %s", (_name, overrides, expected) => {
+    expect(failure(() => insertApplication(overrides))).toBe(expected);
+  });
+
+  it("requires a contact email while pending, but allows purging it afterwards", () => {
+    expect(failure(() => insertApplication({}, ["contact_email"]))).toBe("applications_pending_has_email");
+    const row = insertApplication();
+    db.prepare("UPDATE applications SET status = 'rejected', decided_at = unixepoch() WHERE id = ?").run(row.id);
+    db.prepare("UPDATE applications SET contact_email = NULL WHERE id = ?").run(row.id);
+    expect(db.prepare("SELECT contact_email FROM applications WHERE id = ?").get(row.id)).toEqual({ contact_email: null });
+  });
+
+  it("keeps decided_at consistent with the status", () => {
+    const row = insertApplication();
+    expect(failure(() => db.prepare("UPDATE applications SET status = 'approved' WHERE id = ?").run(row.id))).toBe(
+      "applications_decided_consistency",
+    );
+    expect(failure(() => db.prepare("UPDATE applications SET decided_at = unixepoch() WHERE id = ?").run(row.id))).toBe(
+      "applications_decided_consistency",
+    );
+  });
+
+  it("allows one pending application per site, but a new one after a decision", () => {
+    const first = insertApplication();
+    expect(failure(() => insertApplication())).toBe("SQLITE_CONSTRAINT_UNIQUE");
+    db.prepare("UPDATE applications SET status = 'rejected', decided_at = unixepoch() WHERE id = ?").run(first.id);
+    expect(insertApplication()).toBeTruthy();
+  });
+
+  it("clears member_id (not the application) when the linked member is deleted", () => {
+    const member = insert({ url: "https://linked.example.com", status: "setup" });
+    const app = insertApplication({ url: "https://linked.example.com", status: "approved", decided_at: 1, member_id: member.id });
+    db.prepare("DELETE FROM members WHERE id = ?").run(member.id);
+    expect(db.prepare("SELECT member_id, status FROM applications WHERE id = ?").get(app.id)).toEqual({
+      member_id: null,
+      status: "approved",
+    });
   });
 });

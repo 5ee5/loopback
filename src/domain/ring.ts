@@ -1,4 +1,4 @@
-import { isActive, type Member } from "./member";
+import { isActive, isVisible, type Member } from "./member";
 
 /**
  * Ring navigation engine. Pure functions, no framework imports.
@@ -23,6 +23,14 @@ export function activeMembers(
   ringId: string,
 ): Member[] {
   return ringMembers(members, ringId).filter(isActive);
+}
+
+/** Members to show on the homepage (active and still setting up), in ring order. */
+export function visibleMembers(
+  members: readonly Member[],
+  ringId: string,
+): Member[] {
+  return ringMembers(members, ringId).filter(isVisible);
 }
 
 export type Neighbors = { previous: Member; next: Member };

@@ -20,11 +20,40 @@ export function MemberCard({
   headingLevel = 3,
 }: {
   member: Member;
-  position: number;
+  /** Ring position of an active member. Members still being set up have none. */
+  position?: number;
   /** Keep heading order intact: 2 under a page h1, 3 under a section h2. */
   headingLevel?: 2 | 3;
 }) {
   const Heading = `h${headingLevel}` as const;
+  if (member.status === "setup") {
+    return (
+      <li
+        aria-busy="true"
+        className="card relative flex overflow-hidden"
+      >
+        <span aria-hidden="true" className="w-1.5 shrink-0 bg-line" />
+        <div className="flex min-w-0 flex-1 flex-col p-5">
+          <Heading className="text-lg text-muted">{member.displayName}</Heading>
+          <p className="mt-1 truncate text-sm text-muted">
+            {new URL(member.url).hostname}
+          </p>
+          <div aria-hidden="true" className="mt-4 space-y-2">
+            <div className="h-3 w-4/5 bg-raised motion-safe:animate-pulse" />
+            <div className="h-3 w-3/5 bg-raised motion-safe:animate-pulse" />
+          </div>
+          <p role="status" className="mt-5 text-sm text-muted">
+            <span aria-hidden="true">$ </span>
+            setting up
+            <span aria-hidden="true" className="motion-safe:animate-pulse">
+              ...
+            </span>
+          </p>
+        </div>
+      </li>
+    );
+  }
+
   const accent =
     member.accentColor && HEX_COLOR.test(member.accentColor)
       ? member.accentColor
@@ -41,7 +70,7 @@ export function MemberCard({
         aria-hidden="true"
         className="pointer-events-none absolute -bottom-5 right-3 select-none font-display text-[9rem] leading-none text-accent/[0.07]"
       >
-        {String(position).padStart(2, "0")}
+        {String(position ?? 0).padStart(2, "0")}
       </span>
       <div className="relative flex min-w-0 flex-1 flex-col p-5">
         <Heading className="text-lg">

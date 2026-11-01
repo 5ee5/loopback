@@ -1,6 +1,6 @@
 import type Database from "better-sqlite3";
 import { afterAll, describe, expect, it } from "vitest";
-import { findActiveMember, listActiveMembers, listAllMembers } from "./member-repository";
+import { findActiveMember, listActiveMembers, listAllMembers, listVisibleMembers } from "./member-repository";
 
 afterAll(async () => {
   (globalThis as unknown as { webringDb?: Database.Database }).webringDb?.close();
@@ -10,7 +10,7 @@ describe("member repository (real Postgres)", () => {
   it("lists every member in ring order, regardless of status", async () => {
     const all = await listAllMembers();
     expect(all.map((m) => m.id)).toEqual([
-      "m_a1b2c3", "m_d4e5f6", "m_g7h8j9", "m_k1m2n3", "m_p4q5r6", "m_s7t8u9", "m_v1w2x3", "m_y4z5a6",
+      "m_a1b2c3", "m_d4e5f6", "m_g7h8j9", "m_k1m2n3", "m_p4q5r6", "m_s7t8u9", "m_v1w2x3", "m_y4z5a6", "m_z9y8x7w6",
     ]);
   });
 
@@ -34,10 +34,18 @@ describe("member repository (real Postgres)", () => {
     expect(active.map((m) => m.id)).toEqual(["m_a1b2c3", "m_d4e5f6", "m_g7h8j9", "m_k1m2n3", "m_s7t8u9", "m_y4z5a6"]);
   });
 
+  it("lists active and setup members for the homepage, but not inactive or suspended", async () => {
+    const visible = await listVisibleMembers();
+    expect(visible.map((m) => `${m.id}:${m.status}`)).toEqual([
+      "m_a1b2c3:active", "m_d4e5f6:active", "m_g7h8j9:active", "m_k1m2n3:active", "m_s7t8u9:active", "m_y4z5a6:active", "m_z9y8x7w6:setup",
+    ]);
+  });
+
   it("finds active members and hides inactive, suspended and unknown ones", async () => {
     expect((await findActiveMember("m_a1b2c3"))?.displayName).toBe("Ada Fernsby");
     expect(await findActiveMember("m_p4q5r6")).toBeNull(); // inactive
     expect(await findActiveMember("m_v1w2x3")).toBeNull(); // suspended
+    expect(await findActiveMember("m_z9y8x7w6")).toBeNull(); // still being set up
     expect(await findActiveMember("nope")).toBeNull();
   });
 

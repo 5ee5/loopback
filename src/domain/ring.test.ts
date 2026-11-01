@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Member, MemberStatus } from "./member";
-import { activeMembers, neighbors, randomMember } from "./ring";
+import { activeMembers, neighbors, randomMember, visibleMembers } from "./ring";
 
 function m(
   id: string,
@@ -37,6 +37,36 @@ describe("activeMembers", () => {
     const list = [m("a", "2026-01-01"), m("x", "2026-01-02", "active", "other")];
     expect(ids(activeMembers(list, "main"))).toEqual(["a"]);
     expect(ids(activeMembers(list, "other"))).toEqual(["x"]);
+  });
+});
+
+describe("visibleMembers", () => {
+  it("includes active and setup members, in ring order, but not inactive or suspended", () => {
+    const list = [
+      m("d", "2026-01-04", "setup"),
+      m("c", "2026-01-03", "suspended"),
+      m("b", "2026-01-02", "inactive"),
+      m("a", "2026-01-01"),
+    ];
+    expect(ids(visibleMembers(list, "main"))).toEqual(["a", "d"]);
+  });
+});
+
+describe("members still being set up", () => {
+  const list = [m("a", "2026-01-01"), m("s", "2026-01-02", "setup"), m("b", "2026-01-03")];
+
+  it("are never an active member or a navigation target", () => {
+    expect(ids(activeMembers(list, "main"))).toEqual(["a", "b"]);
+    expect(neighbors(list, "main", "a")?.next.id).toBe("b");
+    expect(neighbors(list, "main", "b")?.previous.id).toBe("a");
+    for (const r of [0, 0.3, 0.6, 0.99]) {
+      expect(randomMember(list, "main", { rng: () => r })?.id).not.toBe("s");
+    }
+  });
+
+  it("can still navigate from their own widget while they install it", () => {
+    const n = neighbors(list, "main", "s");
+    expect([n?.previous.id, n?.next.id]).toEqual(["a", "b"]);
   });
 });
 

@@ -34,8 +34,8 @@ describe("GET /api/members/[id]", () => {
     expect((await res.json()).member).toMatchObject({ id: "m_a1b2c3", displayName: "Ada Fernsby" });
   });
 
-  it("404s for inactive, suspended and unknown members", async () => {
-    for (const id of ["m_p4q5r6", "m_v1w2x3", "m_unknown"]) {
+  it("404s for inactive, suspended, still-setting-up and unknown members", async () => {
+    for (const id of ["m_p4q5r6", "m_v1w2x3", "m_z9y8x7w6", "m_unknown"]) {
       const res = await getMember(new Request("http://x"), ctx(id));
       expect(res.status).toBe(404);
       expect((await res.json()).error.code).toBe("not_found");
@@ -63,6 +63,13 @@ describe("/ring redirects (real data)", () => {
 
   it("still navigate from an inactive member's widget", async () => {
     expect(res302(await ringNext(req("/ring/next/m_p4q5r6"), ctx("m_p4q5r6")))).toBe("https://noor.example.net/");
+  });
+
+  it("skip members who are still being set up, but navigate from them", async () => {
+    // Leo (setup) joins after Ines, the last active member, so Ines -> Ada still wraps.
+    expect(res302(await ringNext(req("/ring/next/m_y4z5a6"), ctx("m_y4z5a6")))).toBe("https://ada.example.com/");
+    expect(res302(await ringPrev(req("/ring/prev/m_z9y8x7w6"), ctx("m_z9y8x7w6")))).toBe("https://ines.example.org/");
+    expect(res302(await ringNext(req("/ring/next/m_z9y8x7w6"), ctx("m_z9y8x7w6")))).toBe("https://ada.example.com/");
   });
 
   it("send unknown or malformed ids to the homepage", async () => {
