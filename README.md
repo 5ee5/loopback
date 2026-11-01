@@ -39,6 +39,8 @@ Change a status with `UPDATE members SET status = 'suspended' WHERE id = '...'`.
 2. `npm run db:migrate`, then `npm run admin:create` and type a password (12+ characters).
 3. Sign in at `/admin/login`. There you approve or reject applications (you see the applicant's email there, and only there) and mark members live. Approving makes the member "setting up"; **Mark live** puts them in the ring. Email the applicant their member ID yourself.
 
+From the admin you can also edit members, change their status (suspending needs a private reason), remove them (you must type their name), and read the audit log of everything you did (`/admin/log`, append-only).
+
 There is no sign-up and no public auth endpoint. Forgot the password? `npm run admin:create -- --force`.
 
 After you have replied to applicants you can delete their emails: `sqlite3 data/webring.db "UPDATE applications SET contact_email = NULL WHERE status <> 'pending';"`.

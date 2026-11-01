@@ -1,0 +1,863 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "920dbb86-c2a0-4052-87a9-f353eae0e161",
+  "prevId": "f2d0cb79-3023-44c8-930f-8d6d15880e26",
+  "tables": {
+    "admin_events": {
+      "name": "admin_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('e_' || lower(hex(randomblob(4))))"
+        },
+        "at": {
+          "name": "at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "admin_user_id": {
+          "name": "admin_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "admin_email": {
+          "name": "admin_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_type": {
+          "name": "target_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_id": {
+          "name": "target_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "details": {
+          "name": "details",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{}'"
+        }
+      },
+      "indexes": {
+        "admin_events_order": {
+          "name": "admin_events_order",
+          "columns": [
+            "at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "admin_events_target": {
+          "name": "admin_events_target",
+          "columns": [
+            "target_type",
+            "target_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "admin_events_action_valid": {
+          "name": "admin_events_action_valid",
+          "value": "\"admin_events\".\"action\" IN ('application.approved', 'application.rejected', 'member.live', 'member.updated', 'member.status_changed', 'member.removed', 'admin.password_changed')"
+        },
+        "admin_events_target_type_valid": {
+          "name": "admin_events_target_type_valid",
+          "value": "\"admin_events\".\"target_type\" IN ('application', 'member', 'admin')"
+        },
+        "admin_events_summary_length": {
+          "name": "admin_events_summary_length",
+          "value": "length(\"admin_events\".\"summary\") BETWEEN 1 AND 300"
+        },
+        "admin_events_details": {
+          "name": "admin_events_details",
+          "value": "json_valid(\"admin_events\".\"details\") AND json_type(\"admin_events\".\"details\") = 'object' AND length(\"admin_events\".\"details\") <= 4000"
+        }
+      }
+    },
+    "applications": {
+      "name": "applications",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('a_' || lower(hex(randomblob(4))))"
+        },
+        "ring_id": {
+          "name": "ring_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "contact_email": {
+          "name": "contact_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "decided_at": {
+          "name": "decided_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "decided_by": {
+          "name": "decided_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "decision_note": {
+          "name": "decision_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "applications_one_pending_per_url": {
+          "name": "applications_one_pending_per_url",
+          "columns": [
+            "ring_id",
+            "url"
+          ],
+          "isUnique": true,
+          "where": "\"applications\".\"status\" = 'pending'"
+        },
+        "applications_status_order": {
+          "name": "applications_status_order",
+          "columns": [
+            "status",
+            "submitted_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "applications_ring_id_rings_id_fk": {
+          "name": "applications_ring_id_rings_id_fk",
+          "tableFrom": "applications",
+          "tableTo": "rings",
+          "columnsFrom": [
+            "ring_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "applications_member_id_members_id_fk": {
+          "name": "applications_member_id_members_id_fk",
+          "tableFrom": "applications",
+          "tableTo": "members",
+          "columnsFrom": [
+            "member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "applications_url_http": {
+          "name": "applications_url_http",
+          "value": "(\"applications\".\"url\" LIKE 'http://_%' OR \"applications\".\"url\" LIKE 'https://_%') AND length(\"applications\".\"url\") <= 2048 AND instr(\"applications\".\"url\", ' ') = 0 AND instr(\"applications\".\"url\", char(9)) = 0 AND instr(\"applications\".\"url\", char(10)) = 0 AND instr(\"applications\".\"url\", char(13)) = 0"
+        },
+        "applications_name_length": {
+          "name": "applications_name_length",
+          "value": "length(trim(\"applications\".\"display_name\")) BETWEEN 1 AND 60"
+        },
+        "applications_description_length": {
+          "name": "applications_description_length",
+          "value": "length(\"applications\".\"description\") <= 160"
+        },
+        "applications_tags": {
+          "name": "applications_tags",
+          "value": "json_valid(\"applications\".\"tags\") AND json_type(\"applications\".\"tags\") = 'array' AND json_array_length(\"applications\".\"tags\") <= 5"
+        },
+        "applications_status_valid": {
+          "name": "applications_status_valid",
+          "value": "\"applications\".\"status\" IN ('pending', 'approved', 'rejected')"
+        },
+        "applications_email": {
+          "name": "applications_email",
+          "value": "\"applications\".\"contact_email\" IS NULL OR (length(\"applications\".\"contact_email\") BETWEEN 3 AND 254 AND instr(\"applications\".\"contact_email\", ' ') = 0 AND instr(\"applications\".\"contact_email\", '@') > 1 AND instr(substr(\"applications\".\"contact_email\", instr(\"applications\".\"contact_email\", '@') + 1), '@') = 0 AND instr(substr(\"applications\".\"contact_email\", instr(\"applications\".\"contact_email\", '@') + 1), '.') > 1)"
+        },
+        "applications_pending_has_email": {
+          "name": "applications_pending_has_email",
+          "value": "\"applications\".\"status\" <> 'pending' OR \"applications\".\"contact_email\" IS NOT NULL"
+        },
+        "applications_decided_consistency": {
+          "name": "applications_decided_consistency",
+          "value": "(\"applications\".\"status\" = 'pending' AND \"applications\".\"decided_at\" IS NULL) OR (\"applications\".\"status\" <> 'pending' AND \"applications\".\"decided_at\" IS NOT NULL)"
+        }
+      }
+    },
+    "members": {
+      "name": "members",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('m_' || lower(hex(randomblob(4))))"
+        },
+        "ring_id": {
+          "name": "ring_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(date('now'))"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "accent_color": {
+          "name": "accent_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "members_ring_url_unique": {
+          "name": "members_ring_url_unique",
+          "columns": [
+            "ring_id",
+            "url"
+          ],
+          "isUnique": true
+        },
+        "members_ring_order": {
+          "name": "members_ring_order",
+          "columns": [
+            "ring_id",
+            "status",
+            "joined_at",
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "members_ring_id_rings_id_fk": {
+          "name": "members_ring_id_rings_id_fk",
+          "tableFrom": "members",
+          "tableTo": "rings",
+          "columnsFrom": [
+            "ring_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "members_id_format": {
+          "name": "members_id_format",
+          "value": "length(\"members\".\"id\") BETWEEN 1 AND 64 AND \"members\".\"id\" NOT GLOB '*[^A-Za-z0-9_-]*'"
+        },
+        "members_url_http": {
+          "name": "members_url_http",
+          "value": "(\"members\".\"url\" LIKE 'http://_%' OR \"members\".\"url\" LIKE 'https://_%') AND length(\"members\".\"url\") <= 2048 AND instr(\"members\".\"url\", ' ') = 0 AND instr(\"members\".\"url\", char(9)) = 0 AND instr(\"members\".\"url\", char(10)) = 0 AND instr(\"members\".\"url\", char(13)) = 0"
+        },
+        "members_name_length": {
+          "name": "members_name_length",
+          "value": "length(trim(\"members\".\"display_name\")) BETWEEN 1 AND 60"
+        },
+        "members_description_length": {
+          "name": "members_description_length",
+          "value": "length(\"members\".\"description\") <= 160"
+        },
+        "members_joined_at": {
+          "name": "members_joined_at",
+          "value": "\"members\".\"joined_at\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND coalesce(date(\"members\".\"joined_at\") = \"members\".\"joined_at\", 0)"
+        },
+        "members_status_valid": {
+          "name": "members_status_valid",
+          "value": "\"members\".\"status\" IN ('active', 'setup', 'inactive', 'suspended')"
+        },
+        "members_tags": {
+          "name": "members_tags",
+          "value": "json_valid(\"members\".\"tags\") AND json_type(\"members\".\"tags\") = 'array' AND json_array_length(\"members\".\"tags\") <= 5"
+        },
+        "members_accent_hex": {
+          "name": "members_accent_hex",
+          "value": "\"members\".\"accent_color\" IS NULL OR (length(\"members\".\"accent_color\") = 7 AND \"members\".\"accent_color\" GLOB '#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]')"
+        },
+        "members_avatar_https": {
+          "name": "members_avatar_https",
+          "value": "\"members\".\"avatar_url\" IS NULL OR (\"members\".\"avatar_url\" LIKE 'https://_%' AND length(\"members\".\"avatar_url\") <= 2048 AND instr(\"members\".\"avatar_url\", ' ') = 0)"
+        }
+      }
+    },
+    "rings": {
+      "name": "rings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "rings_id_format": {
+          "name": "rings_id_format",
+          "value": "length(\"rings\".\"id\") BETWEEN 1 AND 32 AND \"rings\".\"id\" NOT GLOB '*[^a-z0-9-]*'"
+        }
+      }
+    },
+    "account": {
+      "name": "account",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "access_token_expires_at": {
+          "name": "access_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token_expires_at": {
+          "name": "refresh_token_expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "account_user_id_idx": {
+          "name": "account_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "account_user_id_user_id_fk": {
+          "name": "account_user_id_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "session": {
+      "name": "session",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "session_token_unique": {
+          "name": "session_token_unique",
+          "columns": [
+            "token"
+          ],
+          "isUnique": true
+        },
+        "session_user_id_idx": {
+          "name": "session_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user": {
+      "name": "user",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "verification": {
+      "name": "verification",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "verification_identifier_idx": {
+          "name": "verification_identifier_idx",
+          "columns": [
+            "identifier"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

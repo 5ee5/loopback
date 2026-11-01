@@ -1,47 +1,9 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useActionState } from "react";
+import { FormField, inputClass } from "@/components/ui/form-field";
 import { submitApplication } from "./actions";
-import { initialApplicationState, type ApplicationFieldName } from "./form-state";
-
-const inputClass =
-  "w-full border border-line bg-surface px-3 py-2 text-foreground placeholder:text-muted/60 focus:border-accent aria-[invalid=true]:border-red-400";
-
-function Field({
-  name,
-  label,
-  hint,
-  error,
-  children,
-}: {
-  name: ApplicationFieldName;
-  label: string;
-  hint?: string;
-  error?: string;
-  children: (props: { id: string; describedBy: string; invalid: boolean }) => ReactNode;
-}) {
-  const id = `join-${name}`;
-  const describedBy = [hint ? `${id}-hint` : "", error ? `${id}-error` : ""].filter(Boolean).join(" ");
-  return (
-    <div>
-      <label htmlFor={id} className="block text-sm text-accent">
-        <span aria-hidden="true" className="text-muted">$ </span>
-        {label}
-      </label>
-      {hint && (
-        <p id={`${id}-hint`} className="mt-1 text-sm text-muted">
-          {hint}
-        </p>
-      )}
-      <div className="mt-2">{children({ id, describedBy, invalid: Boolean(error) })}</div>
-      {error && (
-        <p id={`${id}-error`} role="alert" className="mt-2 text-sm text-red-400">
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
+import { initialApplicationState } from "./form-state";
 
 export function JoinForm() {
   const [state, formAction, pending] = useActionState(submitApplication, initialApplicationState);
@@ -66,7 +28,7 @@ export function JoinForm() {
         </p>
       )}
 
-      <Field name="displayName" label="Your name" error={errors.displayName}>
+      <FormField name="displayName" label="Your name" error={errors.displayName}>
         {({ id, describedBy, invalid }) => (
           <input
             id={id}
@@ -81,9 +43,9 @@ export function JoinForm() {
             className={inputClass}
           />
         )}
-      </Field>
+      </FormField>
 
-      <Field name="url" label="Your website" hint="The full address, like https://example.com" error={errors.url}>
+      <FormField name="url" label="Your website" hint="The full address, like https://example.com" error={errors.url}>
         {({ id, describedBy, invalid }) => (
           <input
             id={id}
@@ -99,9 +61,9 @@ export function JoinForm() {
             className={inputClass}
           />
         )}
-      </Field>
+      </FormField>
 
-      <Field name="description" label="A short description" hint="Up to 160 characters." error={errors.description}>
+      <FormField name="description" label="A short description" hint="Up to 160 characters." error={errors.description}>
         {({ id, describedBy, invalid }) => (
           <textarea
             id={id}
@@ -114,9 +76,9 @@ export function JoinForm() {
             className={inputClass}
           />
         )}
-      </Field>
+      </FormField>
 
-      <Field name="tags" label="Tags" hint="Optional. Up to 5, separated by commas." error={errors.tags}>
+      <FormField name="tags" label="Tags" hint="Optional. Up to 5, separated by commas." error={errors.tags}>
         {({ id, describedBy, invalid }) => (
           <input
             id={id}
@@ -129,9 +91,9 @@ export function JoinForm() {
             className={inputClass}
           />
         )}
-      </Field>
+      </FormField>
 
-      <Field
+      <FormField
         name="contactEmail"
         label="Your email"
         hint="So we can reply. It is never shown publicly."
@@ -151,7 +113,7 @@ export function JoinForm() {
             className={inputClass}
           />
         )}
-      </Field>
+      </FormField>
 
       {/* Honeypot: hidden from people and assistive tech; bots tend to fill it. */}
       <div aria-hidden="true" className="sr-only">

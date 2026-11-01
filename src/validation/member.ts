@@ -91,3 +91,73 @@ export const memberInputSchema = z.object({
 });
 
 export type MemberInput = z.infer<typeof memberInputSchema>;
+
+// ---- Admin editing -------------------------------------------------------
+
+/** Statuses an admin can pick on the member screen ("setup" only comes from an approval). */
+export const editableStatusSchema = z.enum(["active", "inactive", "suspended"]);
+
+export const statusChangeSchema = z
+  .object({
+    status: editableStatusSchema,
+    reason: z.string().trim().max(300, "Keep the reason under 300 characters"),
+  })
+  .refine((v) => v.status !== "suspended" || v.reason.length > 0, {
+    path: ["reason"],
+    message: "Say why you are suspending them (private, shown only in the log)",
+  });
+
+export type MemberEdit = {
+  displayName: string;
+  url: string;
+  description: string;
+  tags: string[];
+  accentColor: string | null;
+  avatarUrl: string | null;
+};
+
+export type ParsedMemberEdit =
+  | { ok: true; data: MemberEdit }
+  | { ok: false; fieldErrors: Partial<Record<keyof MemberEdit, string>> };
+
+/** Parses the admin edit form. Blank colour/avatar mean "none"; everything else follows the member rules. */
+export function parseMemberEditForm(form: FormData): ParsedMemberEdit {
+  const text = (key: string) => {
+    const value = form.get(key);
+    return typeof value === "string" ? value : "";
+  };
+  const blankToUndefined = (value: string) => (value.trim() === "" ? undefined : value.trim());
+
+  const result = memberInputSchema.safeParse({
+    displayName: text("displayName"),
+    url: text("url"),
+    description: text("description"),
+    tags: text("tags")
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean),
+    accentColor: blankToUndefined(text("accentColor")),
+    avatarUrl: blankToUndefined(text("avatarUrl")),
+  });
+  if (result.success) {
+    const d = result.data;
+    return {
+      ok: true,
+      data: {
+        displayName: d.displayName,
+        url: d.url,
+        description: d.description,
+        tags: d.tags,
+        accentColor: d.accentColor ?? null,
+        avatarUrl: d.avatarUrl ?? null,
+      },
+    };
+  }
+
+  const fieldErrors: Partial<Record<keyof MemberEdit, string>> = {};
+  for (const issue of result.error.issues) {
+    const field = issue.path[0] as keyof MemberEdit | undefined;
+    if (field && !fieldErrors[field]) fieldErrors[field] = issue.message;
+  }
+  return { ok: false, fieldErrors };
+}

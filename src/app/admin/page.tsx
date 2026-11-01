@@ -1,56 +1,30 @@
 import { Suspense } from "react";
-import { Container } from "@/components/ui/container";
 import { loadAdminData } from "@/server/admin-data";
 import { requireAdmin } from "@/server/auth";
-import {
-  approveApplicationAction,
-  markLiveAction,
-  rejectApplicationAction,
-  signOutAction,
-} from "./actions";
-
-const NOTICES: Record<string, string> = {
-  approved: "Approved. The member is now setting up.",
-  rejected: "Rejected.",
-  live: "Marked live. They are in the ring.",
-  not_pending: "That application was already decided.",
-  already_member: "That site is already a member, so nothing was changed.",
-  not_setup: "That member isn't waiting to go live.",
-  invalid: "That request wasn't valid.",
-};
-
-const when = (date: Date) => `${date.toISOString().slice(0, 16).replace("T", " ")} UTC`;
+import { AdminShell } from "./admin-shell";
+import { approveApplicationAction, markLiveAction, rejectApplicationAction } from "./actions";
+import { when } from "./format";
+import { noticeFor } from "./notices";
 
 export default function AdminPage({ searchParams }: PageProps<"/admin">) {
   return (
-    <Container className="pt-12 sm:pt-16">
-      <p className="prompt">$ ./admin</p>
-      <h1 className="text-6xl">Admin</h1>
-      <div className="mt-8">
-        {/* The session is read per request, so it sits behind Suspense (Cache Components). */}
-        <Suspense fallback={<p className="text-muted">loading...</p>}>
-          <Dashboard searchParams={searchParams} />
-        </Suspense>
-      </div>
-    </Container>
+    <AdminShell current="overview">
+      {/* The session is read per request, so it sits behind Suspense (Cache Components). */}
+      <Suspense fallback={<p className="text-muted">loading...</p>}>
+        <Dashboard searchParams={searchParams} />
+      </Suspense>
+    </AdminShell>
   );
 }
 
 async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["searchParams"] }) {
   const admin = await requireAdmin();
   const { pending, settingUp } = loadAdminData(admin);
-  const raw = (await searchParams).notice;
-  const code = typeof raw === "string" ? raw : undefined;
-  const notice = code && Object.hasOwn(NOTICES, code) ? NOTICES[code] : undefined;
+  const notice = noticeFor((await searchParams).notice);
 
   return (
     <div className="space-y-10">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-muted">Signed in as {admin.email}</p>
-        <form action={signOutAction}>
-          <button type="submit" className="btn">sign out</button>
-        </form>
-      </div>
+      <p className="text-sm text-muted">Signed in as {admin.email}</p>
 
       {notice && (
         <p role="status" className="border border-line bg-raised px-3 py-2 text-sm text-accent">

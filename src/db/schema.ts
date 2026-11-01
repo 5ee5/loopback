@@ -188,3 +188,65 @@ export const applications = sqliteTable(
 );
 
 export type ApplicationRow = typeof applications.$inferSelect;
+
+export const ADMIN_ACTIONS = [
+  "application.approved",
+  "application.rejected",
+  "member.live",
+  "member.updated",
+  "member.status_changed",
+  "member.removed",
+  "admin.password_changed",
+] as const;
+export type AdminAction = (typeof ADMIN_ACTIONS)[number];
+
+export const ADMIN_TARGET_TYPES = ["application", "member", "admin"] as const;
+export type AdminTargetType = (typeof ADMIN_TARGET_TYPES)[number];
+
+/**
+ * Append-only record of what the admin did (database triggers, added in a
+ * custom migration, abort any UPDATE or DELETE). The admin's id and email are
+ * stored as plain text, with no foreign key, so the log outlives the account
+ * (`npm run admin:create -- --force` replaces the user). It never holds an
+ * applicant's contact email; a removed member is kept as a name + URL snapshot.
+ */
+export const adminEvents = sqliteTable(
+  "admin_events",
+  {
+    id: text("id")
+      .primaryKey()
+      .default(sql`('e_' || lower(hex(randomblob(4))))`),
+    at: integer("at", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
+    adminUserId: text("admin_user_id").notNull(),
+    adminEmail: text("admin_email").notNull(),
+    action: text("action", { enum: ADMIN_ACTIONS }).notNull(),
+    targetType: text("target_type", { enum: ADMIN_TARGET_TYPES }).notNull(),
+    targetId: text("target_id").notNull(),
+    summary: text("summary").notNull(),
+    details: text("details", { mode: "json" })
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default(sql`'{}'`),
+  },
+  (t) => [
+    index("admin_events_order").on(t.at, t.id),
+    index("admin_events_target").on(t.targetType, t.targetId),
+    check(
+      "admin_events_action_valid",
+      sql`${t.action} IN ('application.approved', 'application.rejected', 'member.live', 'member.updated', 'member.status_changed', 'member.removed', 'admin.password_changed')`,
+    ),
+    check(
+      "admin_events_target_type_valid",
+      sql`${t.targetType} IN ('application', 'member', 'admin')`,
+    ),
+    check("admin_events_summary_length", sql`length(${t.summary}) BETWEEN 1 AND 300`),
+    check(
+      "admin_events_details",
+      sql`json_valid(${t.details}) AND json_type(${t.details}) = 'object' AND length(${t.details}) <= 4000`,
+    ),
+  ],
+);
+
+export type AdminEventRow = typeof adminEvents.$inferSelect;

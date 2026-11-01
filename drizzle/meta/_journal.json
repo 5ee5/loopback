@@ -29,6 +29,20 @@
       "when": 1793560826409,
       "tag": "0003_auth_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793562077406,
+      "tag": "0004_admin_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1793562078364,
+      "tag": "0005_admin_events_append_only",
+      "breakpoints": true
     }
   ]
 }
