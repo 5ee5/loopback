@@ -3,20 +3,13 @@ import { getDb } from "@/db/client";
 import { applications, members } from "@/db/schema";
 import { DEFAULT_RING_ID } from "@/config/site";
 import type { ApplicationInput } from "@/validation/application";
+import { isUniqueViolation } from "./db-errors";
 
 export type CreateApplicationResult =
   | { status: "created"; id: string }
   | { status: "already_member" }
   | { status: "already_pending" }
   | { status: "too_many_pending" };
-
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    (error as { code?: string }).code === "SQLITE_CONSTRAINT_UNIQUE"
-  );
-}
 
 /**
  * Stores a new application as "pending". Checks and insert run in one

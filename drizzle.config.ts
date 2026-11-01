@@ -5,7 +5,7 @@ loadEnvConfig(process.cwd());
 
 export default defineConfig({
   dialect: "sqlite",
-  schema: "./src/db/schema.ts",
+  schema: ["./src/db/schema.ts", "./src/db/auth-schema.ts"],
   out: "./drizzle",
   dbCredentials: { url: process.env.DATABASE_PATH ?? "./data/webring.db" },
 });

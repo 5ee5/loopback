@@ -18,9 +18,12 @@
     "db:migrate": "mkdir -p data && drizzle-kit migrate",
     "db:seed": "node scripts/reset-db.mjs seed",
     "test:integration": "vitest run --config vitest.integration.config.mts",
-    "db:reset:test": "node scripts/reset-db.mjs test"
+    "db:reset:test": "node scripts/reset-db.mjs test",
+    "admin:create": "node scripts/create-admin.mjs"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.7.15",
+    "better-auth": "^1.7.15",
     "better-sqlite3": "^12.11.1",
     "drizzle-orm": "^0.45.4",
     "next": "16.4.3",

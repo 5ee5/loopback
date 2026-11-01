@@ -3,6 +3,7 @@ import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import path from "node:path";
 import { getEnv } from "@/server/env";
+import * as authSchema from "./auth-schema";
 import * as schema from "./schema";
 
 // One connection per process, kept on globalThis so dev hot reloads don't leak handles.
@@ -19,5 +20,5 @@ export function getDb() {
     sqlite.pragma("busy_timeout = 5000");
     globalForDb.webringDb = sqlite;
   }
-  return drizzle(globalForDb.webringDb, { schema });
+  return drizzle(globalForDb.webringDb, { schema: { ...schema, ...authSchema } });
 }

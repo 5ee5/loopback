@@ -23,9 +23,14 @@ export default defineConfig({
     globalSetup: ["./tests/support/global-setup.ts"],
     setupFiles: ["./tests/support/setup.ts"],
     fileParallelism: false, // one shared database
+    // Process Better Auth through Vite so our `next/headers` mock also applies inside its Next plugin.
+    server: { deps: { inline: [/better-auth/] } },
     env: {
       DATABASE_PATH: env.TEST_DATABASE_PATH ?? "",
       TEST_DATABASE_PATH: env.TEST_DATABASE_PATH ?? "",
+      // Auth settings for the tests only (the database is deleted every run).
+      BETTER_AUTH_SECRET: "integration-test-secret-integration-test",
+      ADMIN_EMAIL: "admin@example.com",
     },
   },
 });

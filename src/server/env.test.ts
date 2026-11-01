@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { envSchema } from "./env";
+import { authEnvSchema, envSchema } from "./env";
 
 const base = { DATABASE_PATH: "./data/x.db" };
 
@@ -29,5 +29,29 @@ describe("envSchema", () => {
     for (const bad of ["0", "-1", "1.5", "abc", "100000"]) {
       expect(envSchema.safeParse({ ...base, MAX_PENDING_APPLICATIONS: bad }).success).toBe(false);
     }
+  });
+});
+
+describe("authEnvSchema", () => {
+  const ok = { BETTER_AUTH_SECRET: "x".repeat(32), ADMIN_EMAIL: "Owner@Example.com" };
+
+  it("normalises the admin email and defaults to no extra origins", () => {
+    expect(authEnvSchema.parse(ok)).toEqual({
+      BETTER_AUTH_SECRET: "x".repeat(32),
+      ADMIN_EMAIL: "owner@example.com",
+      TRUSTED_ORIGINS: [],
+    });
+  });
+
+  it("requires a long secret and a real email", () => {
+    expect(authEnvSchema.safeParse({ ...ok, BETTER_AUTH_SECRET: "short" }).success).toBe(false);
+    expect(authEnvSchema.safeParse({ ...ok, BETTER_AUTH_SECRET: undefined }).success).toBe(false);
+    expect(authEnvSchema.safeParse({ ...ok, ADMIN_EMAIL: "not-an-email" }).success).toBe(false);
+    expect(authEnvSchema.safeParse({ ...ok, ADMIN_EMAIL: undefined }).success).toBe(false);
+  });
+
+  it("splits trusted origins on commas and drops blanks", () => {
+    const out = authEnvSchema.parse({ ...ok, TRUSTED_ORIGINS: " http://192.168.8.8:3001 , ,http://localhost:3000" });
+    expect(out.TRUSTED_ORIGINS).toEqual(["http://192.168.8.8:3001", "http://localhost:3000"]);
   });
 });

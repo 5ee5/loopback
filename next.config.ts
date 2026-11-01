@@ -5,6 +5,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Never cached or indexed, and never framed (clickjacking on the approve buttons).
+        source: "/admin/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        ],
+      },
+      {
         // Versioned, embeddable on any site. A breaking change ships as v2.js.
         source: "/widget/v1.js",
         headers: [

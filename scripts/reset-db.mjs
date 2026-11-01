@@ -5,6 +5,10 @@ import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { createAdmin } from "./create-admin.mjs";
+
+/** Fixed credentials for the throwaway e2e database only (deleted and rebuilt every run). Shared with the Playwright specs through a JSON file. */
+const E2E_ADMIN = JSON.parse(readFileSync(new URL("../tests/support/e2e-admin.json", import.meta.url), "utf8"));
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const seedSql = () => readFileSync(path.join(root, "db/seed.dev.sql"), "utf8");
@@ -50,7 +54,8 @@ export function seedDev(file) {
 }
 
 // CLI: node scripts/reset-db.mjs <test|e2e|seed>
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+// (In a function, not top-level await, so Playwright can load this file as CommonJS.)
+async function main() {
   const { default: nextEnv } = await import("@next/env");
   nextEnv.loadEnvConfig(process.cwd());
   const which = process.argv[2];
@@ -61,5 +66,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   if (which === "seed") seedDev(file);
   else resetDatabase(file);
+  if (which === "e2e") await createAdmin({ file, ...E2E_ADMIN });
   console.log(`${which === "seed" ? "seeded" : "reset"} ${file}`);
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 }

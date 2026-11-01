@@ -1,7 +1,7 @@
 "use server";
 
-import { headers } from "next/headers";
 import { createApplication } from "@/server/application-repository";
+import { trustedClientAddress } from "@/server/client-key";
 import { getEnv } from "@/server/env";
 import { createRateLimiter, type RateLimiter } from "@/server/rate-limit";
 import { parseApplicationForm } from "@/validation/application";
@@ -23,10 +23,8 @@ const MESSAGES = {
 } as const;
 
 async function clientKey(trustProxy: boolean): Promise<{ key: string; limit: number }> {
-  if (trustProxy) {
-    const forwarded = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim();
-    if (forwarded) return { key: `ip:${forwarded}`, limit: 3 };
-  }
+  const address = await trustedClientAddress(trustProxy);
+  if (address) return { key: `ip:${address}`, limit: 3 };
   // No trustworthy client address: everyone shares one, roomier, bucket.
   return { key: "shared", limit: 20 };
 }

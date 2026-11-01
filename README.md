@@ -10,6 +10,7 @@ An independent webring connecting personal websites. See `docs/architecture.md` 
 - `npm run test:run`: unit tests (Vitest); `npm test` for watch mode
 - `npm run test:integration`: tests against a real SQLite file (constraints, repository, API)
 - `npm run db:migrate`, `npm run db:generate`: apply / generate Drizzle migrations
+- `npm run admin:create`: create the admin account (`-- --force` replaces it)
 - `npm run db:seed`: load the fictional dev members (never in production)
 - `npm run test:e2e`: end-to-end tests (Playwright; needs Chromium and its system libraries)
 
@@ -31,3 +32,13 @@ SELECT id FROM members WHERE url = 'https://example.com';"
 ```
 
 Change a status with `UPDATE members SET status = 'suspended' WHERE id = '...'`. Changes appear on the site within a couple of minutes (cached reads).
+
+## Admin
+
+1. In `.env.local` set `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) and `ADMIN_EMAIL` (the address you will sign in with).
+2. `npm run db:migrate`, then `npm run admin:create` and type a password (12+ characters).
+3. Sign in at `/admin/login`. There you approve or reject applications (you see the applicant's email there, and only there) and mark members live. Approving makes the member "setting up"; **Mark live** puts them in the ring. Email the applicant their member ID yourself.
+
+There is no sign-up and no public auth endpoint. Forgot the password? `npm run admin:create -- --force`.
+
+After you have replied to applicants you can delete their emails: `sqlite3 data/webring.db "UPDATE applications SET contact_email = NULL WHERE status <> 'pending';"`.
