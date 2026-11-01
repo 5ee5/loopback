@@ -50,3 +50,7 @@ next-env.d.ts
 
 # generated widget copy
 /public/widget/
+!.env.example
+
+# local SQLite databases
+/data/

@@ -13,7 +13,9 @@ import {
 
 export async function generateStaticParams() {
   const members = await listActiveMembers();
-  return members.map((m) => ({ id: m.id }));
+  // Cache Components needs at least one param; an empty ring gets a placeholder
+  // that resolves to the normal not-found page.
+  return members.length > 0 ? members.map((m) => ({ id: m.id })) : [{ id: "none" }];
 }
 
 export async function generateMetadata({

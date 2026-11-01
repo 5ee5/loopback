@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { DEFAULT_RING_ID } from "@/config/site";
 import { neighbors, randomMember } from "@/domain/ring";
+import { memberIdSchema } from "@/validation/ids";
 import { listAllMembers } from "./member-repository";
 
 /**
@@ -15,11 +16,13 @@ export async function ringRedirect(
 ): Promise<NextResponse> {
   const members = await listAllMembers();
   let target: string | undefined;
+  // Anything that isn't a well-formed id is treated as "unknown", never looked up.
+  const validId = id !== undefined && memberIdSchema.safeParse(id).success ? id : undefined;
 
   if (kind === "random") {
-    target = randomMember(members, DEFAULT_RING_ID, { excludeId: id })?.url;
-  } else if (id) {
-    const around = neighbors(members, DEFAULT_RING_ID, id);
+    target = randomMember(members, DEFAULT_RING_ID, { excludeId: validId })?.url;
+  } else if (validId) {
+    const around = neighbors(members, DEFAULT_RING_ID, validId);
     target = (kind === "next" ? around?.next : around?.previous)?.url;
   }
 

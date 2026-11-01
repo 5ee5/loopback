@@ -1,0 +1,217 @@
+{
+  "id": "bc0ad4a0-6de5-45e2-be46-e79b3890b17f",
+  "prevId": "29ea35eb-adba-43ba-a886-d79e9b51b645",
+  "version": "6",
+  "dialect": "sqlite",
+  "tables": {
+    "members": {
+      "name": "members",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('m_' || lower(hex(randomblob(4))))"
+        },
+        "ring_id": {
+          "name": "ring_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(date('now'))"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "accent_color": {
+          "name": "accent_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "members_ring_url_unique": {
+          "name": "members_ring_url_unique",
+          "columns": [
+            "ring_id",
+            "url"
+          ],
+          "isUnique": true
+        },
+        "members_ring_order": {
+          "name": "members_ring_order",
+          "columns": [
+            "ring_id",
+            "status",
+            "joined_at",
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "members_ring_id_rings_id_fk": {
+          "name": "members_ring_id_rings_id_fk",
+          "tableFrom": "members",
+          "columnsFrom": [
+            "ring_id"
+          ],
+          "tableTo": "rings",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "members_id_format": {
+          "name": "members_id_format",
+          "value": "length(\"members\".\"id\") BETWEEN 1 AND 64 AND \"members\".\"id\" NOT GLOB '*[^A-Za-z0-9_-]*'"
+        },
+        "members_url_http": {
+          "name": "members_url_http",
+          "value": "(\"members\".\"url\" LIKE 'http://_%' OR \"members\".\"url\" LIKE 'https://_%') AND length(\"members\".\"url\") <= 2048 AND instr(\"members\".\"url\", ' ') = 0 AND instr(\"members\".\"url\", char(9)) = 0 AND instr(\"members\".\"url\", char(10)) = 0 AND instr(\"members\".\"url\", char(13)) = 0"
+        },
+        "members_name_length": {
+          "name": "members_name_length",
+          "value": "length(trim(\"members\".\"display_name\")) BETWEEN 1 AND 60"
+        },
+        "members_description_length": {
+          "name": "members_description_length",
+          "value": "length(\"members\".\"description\") <= 160"
+        },
+        "members_joined_at": {
+          "name": "members_joined_at",
+          "value": "\"members\".\"joined_at\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND coalesce(date(\"members\".\"joined_at\") = \"members\".\"joined_at\", 0)"
+        },
+        "members_status_valid": {
+          "name": "members_status_valid",
+          "value": "\"members\".\"status\" IN ('active', 'inactive', 'suspended')"
+        },
+        "members_tags": {
+          "name": "members_tags",
+          "value": "json_valid(\"members\".\"tags\") AND json_type(\"members\".\"tags\") = 'array' AND json_array_length(\"members\".\"tags\") <= 5"
+        },
+        "members_accent_hex": {
+          "name": "members_accent_hex",
+          "value": "\"members\".\"accent_color\" IS NULL OR (length(\"members\".\"accent_color\") = 7 AND \"members\".\"accent_color\" GLOB '#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]')"
+        },
+        "members_avatar_https": {
+          "name": "members_avatar_https",
+          "value": "\"members\".\"avatar_url\" IS NULL OR (\"members\".\"avatar_url\" LIKE 'https://_%' AND length(\"members\".\"avatar_url\") <= 2048 AND instr(\"members\".\"avatar_url\", ' ') = 0)"
+        }
+      }
+    },
+    "rings": {
+      "name": "rings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "rings_id_format": {
+          "name": "rings_id_format",
+          "value": "length(\"rings\".\"id\") BETWEEN 1 AND 32 AND \"rings\".\"id\" NOT GLOB '*[^a-z0-9-]*'"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

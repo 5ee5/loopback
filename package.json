@@ -13,22 +13,34 @@
     "test:e2e": "playwright test",
     "build:widget": "node scripts/build-widget.mjs",
     "predev": "npm run build:widget",
-    "prebuild": "npm run build:widget"
+    "prebuild": "npm run build:widget",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "mkdir -p data && drizzle-kit migrate",
+    "db:seed": "node scripts/reset-db.mjs seed",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "db:reset:test": "node scripts/reset-db.mjs test"
   },
   "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "drizzle-orm": "^0.45.4",
     "next": "16.4.3",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@next/env": "16.4.3",
     "@playwright/test": "1.63.0",
     "@tailwindcss/turbopack": "^4",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.1.2",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "jsdom": "^29.1.1",
