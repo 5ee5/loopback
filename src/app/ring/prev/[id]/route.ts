@@ -1,0 +1,10 @@
+import type { NextRequest } from "next/server";
+import { ringRedirect } from "@/server/ring-redirect";
+
+export async function GET(
+  request: NextRequest,
+  ctx: RouteContext<"/ring/prev/[id]">,
+) {
+  const { id } = await ctx.params;
+  return ringRedirect(request, "prev", id);
+}
