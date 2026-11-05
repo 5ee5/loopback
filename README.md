@@ -1,65 +1,46 @@
 # Loopback
 
-A small webring for personal websites, live at https://ring.5ee5.dev. See `docs/architecture.md` for design decisions.
+A small webring for personal websites: a loop of independent sites, each linking to the next, with no algorithms and no feeds. Live at **https://ring.5ee5.dev**.
 
-## Commands
+Visitors follow the **Previous**, **Random** and **Next** links on a member's site and end up on another member's site. After the last site, the loop comes back to the first.
 
-- `npm run dev`: dev server at http://localhost:3000
-- `npm run build` / `npm start`: production build and serve
-- `npm run lint`, `npm run typecheck`
-- `npm run test:run`: unit tests (Vitest); `npm test` for watch mode
-- `npm run test:integration`: tests against a real SQLite file (constraints, repository, API)
-- `npm run db:migrate`, `npm run db:generate`: apply / generate Drizzle migrations
-- `npm run admin:create`: create the admin account (`-- --force` replaces it)
-- `npm run db:seed`: load the fictional dev members (never in production)
-- `npm run test:e2e`: end-to-end tests (Playwright; needs Chromium and its system libraries)
+## Join
 
-## Widget
+Apply at https://ring.5ee5.dev/join. Applications are reviewed by hand; the guidelines are at https://ring.5ee5.dev/guidelines. Once you're approved you get a member ID.
 
-The embeddable widget lives in `widget/` (see `docs/architecture.md`). `npm run build:widget` copies it to `public/widget/v1.js`; `dev` and `build` do this automatically. Install instructions are served at `/widget`.
+## Add it to your site
 
-For sites that can't run scripts there is also a one-line iframe: `<iframe src="https://YOUR-RING/embed?url=https://your-site.com" width="320" height="100"></iframe>` (optional `fgcolor` and `bgcolor`, hex without `#`).
+Paste this where you want the links, replacing `YOUR_ID` with your member ID:
 
-## Database and members
-
-Copy `.env.example` to `.env.local`, then `npm run db:migrate` (and `npm run db:seed` for fictional dev data). The database is a SQLite file in `data/`.
-
-Add a real member with SQL (the schema rejects invalid rows; the `PRAGMA` turns on foreign-key checks, which `sqlite3` skips by default):
-
-```sh
-sqlite3 data/loopback.db "PRAGMA foreign_keys = ON;
-INSERT INTO members (ring_id, display_name, url, description, status, tags)
-VALUES ('main', 'Your Name', 'https://example.com', 'A short description.', 'active', '[\"blog\"]');
-SELECT id FROM members WHERE url = 'https://example.com';"
+```html
+<webring-nav member="YOUR_ID">
+  <a href="https://ring.5ee5.dev/ring/prev/YOUR_ID">Previous</a>
+  <a href="https://ring.5ee5.dev/ring/random?from=YOUR_ID">Random</a>
+  <a href="https://ring.5ee5.dev/ring/next/YOUR_ID">Next</a>
+</webring-nav>
+<script src="https://ring.5ee5.dev/widget/v1.js" data-name="Loopback" async></script>
 ```
 
-Change a status with `UPDATE members SET status = 'suspended' WHERE id = '...'`. Changes appear on the site within a couple of minutes (cached reads).
+The plain links are a fallback, so they still work if the script is blocked. If your site can't run scripts, use a one-line iframe instead (no member ID needed):
 
-## Admin
+```html
+<iframe src="https://ring.5ee5.dev/embed?url=https://your-site.com" width="320" height="100" style="border:0" title="Loopback"></iframe>
+```
 
-1. In `.env.local` set `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) and `ADMIN_EMAIL` (the address you will sign in with).
-2. `npm run db:migrate`, then `npm run admin:create` and type a password (8+ characters).
-3. Sign in at `/admin/login`. There you approve or reject applications (you see the applicant's email there, and only there) and mark members live. Approving makes the member "setting up"; **Mark live** puts them in the ring. Email the applicant their member ID yourself.
+Optional `fgcolor` and `bgcolor` parameters take hex colours without the `#`. More options and live previews are at https://ring.5ee5.dev/widget, and there is an 88×31 button too.
 
-From the admin you can also edit members, change their status (suspending needs a private reason), remove them (you must type their name), and read the audit log of everything you did (`/admin/log`, append-only).
+## Built with
 
-There is no sign-up and no public auth endpoint. Forgot the password? `npm run admin:create -- --force`.
+Next.js, TypeScript, Tailwind and SQLite. The design decisions are written up in [`docs/architecture.md`](docs/architecture.md).
 
-After you have replied to applicants you can delete their emails: `sqlite3 data/loopback.db "UPDATE applications SET contact_email = NULL WHERE status <> 'pending';"`.
+## Run it locally
 
-## Running it live (one folder)
+```sh
+npm install
+cp .env.example .env.local   # then fill in the values
+npm run db:migrate
+npm run db:seed              # fictional dev members
+npm run dev
+```
 
-Development and the live ring share this folder but not their data or build output:
-
-| | dev | live |
-|---|---|---|
-| settings | `.env.local` | `.env.live` (gitignored, never auto-loaded) |
-| database | `data/loopback.db` | `data/live.db` |
-| build | `.next` (and `.next/dev`) | `.next-live` (`NEXT_DIST_DIR`) |
-| run | `npm run dev` | pm2 process `loopback`, `127.0.0.1:3200` |
-
-`.env.live` needs `DATABASE_PATH=./data/live.db`, `SITE_URL` (https), `BETTER_AUTH_SECRET`, `ADMIN_EMAIL`, `TRUST_PROXY=true` (exactly one proxy in front), `NEXT_DIST_DIR=.next-live` and an empty `TRUSTED_ORIGINS=`.
-
-- `npm run live:admin` creates (or with `-- --force` resets) the live admin account.
-- `npm run live:deploy` migrates the live database, builds into `.next-live`, restarts pm2 and saves its list. It refuses uncommitted changes (`ALLOW_DIRTY=1` overrides), so what goes live is what is committed.
-- The public address comes from a Cloudflare Tunnel ingress entry (`/etc/cloudflared/config.yml`) pointing at port 3200.
+`npm run test:run` runs the unit tests, `npm run test:integration` the database tests, `npm run lint` and `npm run typecheck` the static checks.
