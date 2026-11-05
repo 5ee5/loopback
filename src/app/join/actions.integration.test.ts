@@ -124,6 +124,22 @@ describe("submitApplication (real SQLite)", () => {
     expect((await submit({ ...good, url: "https://b-0.example.com" })).status).toBe("success");
   });
 
+  it("treats every address in one IPv6 /64 as the same visitor", async () => {
+    vi.stubEnv("TRUST_PROXY", "true");
+    let n = 0;
+    let prefix = "2001:db8:aaaa:bbbb";
+    vi.doMock("next/headers", () => ({
+      // A different address inside the same /64 on every request.
+      headers: async () => new Headers({ "x-forwarded-for": `${prefix}:${++n}:${n}:${n}:${n}` }),
+    }));
+    for (let i = 0; i < 3; i++) {
+      expect((await submit({ ...good, url: `https://v6-${i}.example.com` })).status).toBe("success");
+    }
+    expect((await submit({ ...good, url: "https://v6-3.example.com" })).message).toMatch(/too many/i);
+    prefix = "2001:db8:aaaa:cccc"; // a different /64 is a different visitor
+    expect((await submit({ ...good, url: "https://v6-other.example.com" })).status).toBe("success");
+  });
+
   it("cannot be dodged by sending a fake x-forwarded-for (only the proxy's last entry counts)", async () => {
     vi.stubEnv("TRUST_PROXY", "true");
     let fake = 0;
