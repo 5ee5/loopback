@@ -5,11 +5,18 @@
  * own site name, which is escaped anyway.
  */
 
+import { LOGO_DOTS, LOGO_DOT_RADIUS, LOGO_VIEWBOX } from "@/config/logo";
+
 // Black on white, or white on black, following the visitor's colour scheme.
 const DEFAULT_FG = "light-dark(#000,#fff)";
 const DEFAULT_BG = "light-dark(#fff,#0b0b0b)";
 const HEX = /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/;
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
+
+// The mark, inline and in the text colour: no image request, so the strict CSP still holds.
+const LOGO_SVG = `<svg class="logo" viewBox="${LOGO_VIEWBOX}" fill="currentColor" aria-hidden="true" focusable="false">${LOGO_DOTS.map(
+  ([x, y]) => `<circle cx="${x}" cy="${y}" r="${LOGO_DOT_RADIUS}"/>`,
+).join("")}</svg>`;
 
 export function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c);
@@ -54,7 +61,10 @@ a:focus-visible{outline:2px solid currentColor;outline-offset:.2em}
 .mid{display:flex;flex-direction:column;align-items:center;gap:.2em;transition:transform .3s cubic-bezier(.175,.885,.32,1.275);animation:in .5s ease .06s both}
 nav:has(.p:hover) .mid,nav:has(.p:focus-visible) .mid{transform:rotate(-6deg)}
 nav:has(.n:hover) .mid,nav:has(.n:focus-visible) .mid{transform:rotate(6deg)}
-.title{font-size:1.2em;letter-spacing:.02em}
+.title{display:inline-flex;align-items:center;font-size:1.2em;letter-spacing:.02em}
+.logo{flex:none;width:1.2em;height:1.2em;margin-right:.45em;transition:transform .5s cubic-bezier(.175,.885,.32,1.275)}
+nav:has(.p:hover) .logo,nav:has(.p:focus-visible) .logo{transform:rotate(-72deg)}
+nav:has(.n:hover) .logo,nav:has(.n:focus-visible) .logo{transform:rotate(72deg)}
 .title::after{content:"_";animation:blink 1.1s steps(1) infinite}
 .rand{font-size:.7em;font-weight:400;opacity:.7;text-decoration:underline;text-underline-offset:.25em;transition:opacity .2s}
 .rand:hover,.rand:focus-visible{opacity:1}
@@ -68,7 +78,7 @@ nav:has(.n:hover) .mid,nav:has(.n:focus-visible) .mid{transform:rotate(6deg)}
 <nav aria-label="${name}">
 <a class="arrow p" href="/ring/prev/${id}" target="_top"><span aria-hidden="true">&#9664;</span><span class="sr">Previous</span></a>
 <div class="mid">
-<a class="title" href="/" target="_top">${name}</a>
+<a class="title" href="/" target="_top">${LOGO_SVG}${name}</a>
 <a class="rand" href="/ring/random?from=${id}" target="_top">Random</a>
 </div>
 <a class="arrow n" href="/ring/next/${id}" target="_top"><span aria-hidden="true">&#9654;</span><span class="sr">Next</span></a>

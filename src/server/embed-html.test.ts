@@ -31,6 +31,23 @@ describe("renderEmbedHtml", () => {
   });
 });
 
+describe("the logo in the embed", () => {
+  const html = renderEmbedHtml(base);
+
+  it("is five inline dots to the left of the name, inside the title link", () => {
+    expect(html.match(/<circle /g)).toHaveLength(5);
+    expect(html).toMatch(/<a class="title" href="\/" target="_top"><svg class="logo"[^>]*>[\s\S]*<\/svg>Webring<\/a>/);
+  });
+
+  it("is decorative and draws in the text colour, so it follows fgcolor", () => {
+    expect(html).toContain('class="logo" viewBox="3 3 26 26" fill="currentColor" aria-hidden="true"');
+  });
+
+  it("needs no image, script or external request", () => {
+    expect(html).not.toMatch(/<img|<script|url\(|href="https?:|src=/i);
+  });
+});
+
 describe("escapeHtml", () => {
   it("escapes the five special characters", () => {
     expect(escapeHtml(`&<>"'`)).toBe("&amp;&lt;&gt;&quot;&#39;");

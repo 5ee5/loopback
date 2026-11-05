@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { Container } from "@/components/ui/container";
+import { Logo } from "@/components/logo";
 
 const linkClass = "py-2 text-muted no-underline hover:text-accent";
 
@@ -8,7 +9,8 @@ export function SiteHeader() {
   return (
     <header className="border-b border-line bg-raised">
       <Container className="flex items-center justify-between py-4">
-        <Link href="/" className="text-lg font-bold text-accent no-underline">
+        <Link href="/" className="group inline-flex items-center text-lg font-bold text-accent no-underline">
+          <Logo className="mr-3 h-[1.3em] w-[1.3em] transition-transform duration-500 ease-out motion-safe:group-hover:rotate-[72deg]" />
           <span aria-hidden="true" className="font-normal text-muted">
             ${" "}
           </span>
