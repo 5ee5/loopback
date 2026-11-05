@@ -1,0 +1,47 @@
+import { describe, expect, it } from "vitest";
+import { EMBED_HEADERS, EMPTY_EMBED_HTML, escapeHtml, renderEmbedHtml } from "./embed-html";
+
+const base = { memberId: "m_418513f6", siteName: "Webring" };
+
+describe("renderEmbedHtml", () => {
+  it("links prev/random/next for the member, opening in the top window", () => {
+    const html = renderEmbedHtml(base);
+    expect(html).toContain('href="/ring/prev/m_418513f6" target="_top"');
+    expect(html).toContain('href="/ring/random?from=m_418513f6" target="_top"');
+    expect(html).toContain('href="/ring/next/m_418513f6" target="_top"');
+  });
+
+  it("uses valid colours and falls back to defaults for invalid ones", () => {
+    expect(renderEmbedHtml({ ...base, fg: "#abc", bg: "#112233" })).toContain("background:#112233;color:#abc");
+    const html = renderEmbedHtml({ ...base, fg: "red;}x{", bg: "url(x)" });
+    expect(html).toContain("background:#06100a;color:#4ade80");
+    expect(html).not.toContain("url(x)");
+  });
+
+  it("returns the blank page for an id that could break out of the markup", () => {
+    expect(renderEmbedHtml({ ...base, memberId: '"><script>alert(1)</script>' })).toBe(EMPTY_EMBED_HTML);
+    expect(renderEmbedHtml({ ...base, memberId: "" })).toBe(EMPTY_EMBED_HTML);
+  });
+
+  it("escapes the site name and contains no script", () => {
+    const html = renderEmbedHtml({ ...base, siteName: '<img src=x onerror="a">&' });
+    expect(html).not.toContain("<img");
+    expect(html).toContain("&lt;img src=x onerror=&quot;a&quot;&gt;&amp;");
+    expect(html).not.toContain("<script");
+  });
+});
+
+describe("escapeHtml", () => {
+  it("escapes the five special characters", () => {
+    expect(escapeHtml(`&<>"'`)).toBe("&amp;&lt;&gt;&quot;&#39;");
+  });
+});
+
+describe("EMBED_HEADERS", () => {
+  it("allows framing anywhere but forbids scripts and external loads", () => {
+    const csp = EMBED_HEADERS["Content-Security-Policy"];
+    expect(csp).toContain("frame-ancestors *");
+    expect(csp).toContain("default-src 'none'");
+    expect(csp).not.toContain("script-src");
+  });
+});

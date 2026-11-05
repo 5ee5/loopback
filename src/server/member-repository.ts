@@ -42,6 +42,18 @@ export async function listVisibleMembers(
   return visibleMembers(await listAllMembers(ringId), ringId);
 }
 
+/**
+ * A member (in any status) by site address. The address must already be in the
+ * canonical form produced by `siteUrlSchema`; callers decide what to show for
+ * each status.
+ */
+export async function findMemberByUrl(
+  url: string,
+  ringId: string = DEFAULT_RING_ID,
+): Promise<Member | null> {
+  return (await listAllMembers(ringId)).find((m) => m.url === url) ?? null;
+}
+
 /** Active member by id, or null. Inactive/suspended members are not public. */
 export async function findActiveMember(
   id: string,

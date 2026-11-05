@@ -18,6 +18,8 @@ An independent webring connecting personal websites. See `docs/architecture.md` 
 
 The embeddable widget lives in `widget/` (see `docs/architecture.md`). `npm run build:widget` copies it to `public/widget/v1.js`; `dev` and `build` do this automatically. Install instructions are served at `/widget`.
 
+For sites that can't run scripts there is also a one-line iframe: `<iframe src="https://YOUR-RING/embed?url=https://your-site.com" width="320" height="70"></iframe>` (optional `fgcolor` and `bgcolor`, hex without `#`).
+
 ## Database and members
 
 Copy `.env.example` to `.env.local`, then `npm run db:migrate` (and `npm run db:seed` for fictional dev data). The database is a SQLite file in `data/`.

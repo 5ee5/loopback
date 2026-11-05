@@ -31,7 +31,7 @@
 - **Styling.** Shadow DOM isolates it from host CSS. It inherits the host's font and colour. Members customise with `--webring-color|background|border|font|radius|gap` and a `compact` attribute. Styles use constructable stylesheets (not subject to `style-src`), with a `<style>` fallback.
 - **Serving.** `/widget/v1.js` is versioned (a breaking change ships as `v2.js`) and sent with `Cache-Control` (1 h + stale-while-revalidate), `Cross-Origin-Resource-Policy: cross-origin`, `Access-Control-Allow-Origin: *` and `nosniff` (see `next.config.ts`).
 - **Install page.** `/widget` is a static server component: snippets, option reference, platform notes and live previews that run the real script. `SITE_URL` (env, default `http://localhost:3000`) feeds the snippets.
-- **Deferred.** Iframe embed, a ring parameter (routes don't encode a ring yet), an interactive generator, and checking that members actually installed the widget (M5).
+- **Deferred.** A ring parameter (routes don't encode a ring yet), an interactive generator, and checking that members actually installed the widget (M5).
 - **Playwright** now runs against its own build on port 3100 (`reuseExistingServer: false`), because another app may be listening on 3000.
 
 ## Milestone 4: database
@@ -69,3 +69,10 @@
 - **Pages** (all behind `requireAdmin()`, same hardening as M5b): `/admin` (pending applications and members in setup), `/admin/members` (every member, status filter from an allowlist, counts per status), `/admin/members/[id]` (edit form, status control, link to removal), `/admin/members/[id]/remove` (typed-name confirmation) and `/admin/log` (50 per page, newest first, details expandable). `AdminShell` is a static frame (nav and sign-out) so it prerenders; the session-dependent body sits in a Suspense boundary. Every member change calls `updateTag("members")`, so the public site updates at once.
 - **Notices** after an action are a fixed lookup (`src/app/admin/notices.ts`), so a crafted `?notice=` can never reflect arbitrary text.
 - **Shared form field** (`src/components/ui/form-field.tsx`) is now used by the join form and the admin forms.
+
+## Iframe embed
+- **One line, no script.** `<iframe src="{SITE_URL}/embed?url=https://your-site.com">` for sites that can't run a script (or won't). `GET /embed` (`src/app/embed/route.ts`) finds the member by site address (`findMemberByUrl`, after `siteUrlSchema` canonicalises the address), so members don't need to know their id.
+- **Who gets the widget.** Active and `setup` members (`isVisible`, same as the widget). Unknown, inactive or suspended addresses and malformed queries get a blank 200 frame, never an error, so the response doesn't reveal why. Optional `fgcolor` and `bgcolor` take 3 or 6 hex digits without `#`; invalid colours are ignored.
+- **Static HTML by hand** (`src/server/embed-html.ts`): no JavaScript, images or external requests. Links are relative to the ring's origin with `target="_top"`, so they work without JS and open in the visitor's window. The only dynamic values are the id (validated against `^[A-Za-z0-9_-]{1,64}$` again here), two validated colours and our own site name (escaped).
+- **Headers.** `/embed` is the one page meant to be framed anywhere: CSP `default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors *`, `nosniff`, `noindex`, `Cross-Origin-Resource-Policy: cross-origin`, and a 60 s cache. Every other page now sends `X-Frame-Options: SAMEORIGIN` and `frame-ancestors 'self'` (`next.config.ts`); `/admin` keeps its own stricter rule.
+- **Trade-offs.** Not customisable beyond two colours (use the widget for that), and the address in the URL must match the registered one exactly after canonicalisation, so a member who changes their address must update the snippet. Tests: `src/validation/embed.test.ts`, `src/server/embed-html.test.ts`, `src/app/embed/embed.integration.test.ts`.
