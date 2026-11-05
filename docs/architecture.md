@@ -1,7 +1,7 @@
 # Architecture decisions
 
 ## Structure
-- `src/app` holds routes only and stays thin. Shared UI lives in `src/components`, and site-wide constants in `src/config/site.ts` (the site name is a placeholder defined once).
+- `src/app` holds routes only and stays thin. Shared UI lives in `src/components`, and site-wide constants in `src/config/site.ts` (the site name, Loopback, is defined once; the 88x31 button SVG is the one place it is drawn by hand).
 - Planned, not yet created: `src/domain` (framework-free ring logic), `src/db` (Drizzle), `src/server` (repositories, authorization), `src/validation` (Zod), and `widget/` (standalone vanilla-JS widget with its own build, talking to the app only over HTTP).
 
 ## Decisions

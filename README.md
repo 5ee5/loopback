@@ -1,6 +1,6 @@
-# Webring
+# Loopback
 
-An independent webring connecting personal websites. See `docs/architecture.md` for design decisions.
+A small webring for personal websites, live at https://ring.5ee5.dev. See `docs/architecture.md` for design decisions.
 
 ## Commands
 

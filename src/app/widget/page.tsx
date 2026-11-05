@@ -153,12 +153,12 @@ export default function WidgetPage() {
           <p>A classic badge, to use next to the widget or instead of it.</p>
           <Image
             src="/button/88x31.svg"
-            alt="webring"
+            alt="loopback"
             width={88}
             height={31}
             unoptimized
           />
-          <Code>{`<a href="${SITE_URL}/"><img src="${SITE_URL}/button/88x31.svg" width="88" height="31" alt="webring"></a>`}</Code>
+          <Code>{`<a href="${SITE_URL}/"><img src="${SITE_URL}/button/88x31.svg" width="88" height="31" alt="loopback"></a>`}</Code>
         </section>
 
         <section aria-labelledby="options" className="mt-16">

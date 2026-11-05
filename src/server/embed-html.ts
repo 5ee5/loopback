@@ -17,7 +17,7 @@ export function escapeHtml(text: string): string {
 
 /** What an unknown, inactive or suspended site gets: a blank, transparent frame. */
 export const EMPTY_EMBED_HTML =
-  '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Webring</title></head><body></body></html>';
+  '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Loopback</title></head><body></body></html>';
 
 export function renderEmbedHtml(options: {
   memberId: string;
