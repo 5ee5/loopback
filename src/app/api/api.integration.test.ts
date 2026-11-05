@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import type Database from "better-sqlite3";
 import { afterAll, describe, expect, it } from "vitest";
+import { SITE_URL } from "@/config/site";
 import { GET as listMembers } from "./members/route";
 import { GET as getMember } from "./members/[id]/route";
 import { GET as ringNext } from "../ring/next/[id]/route";
@@ -74,7 +75,7 @@ describe("/ring redirects (real data)", () => {
 
   it("send unknown or malformed ids to the homepage", async () => {
     for (const id of ["nope", "a b", "../x"]) {
-      expect(res302(await ringNext(req("/ring/next/x"), ctx(id)))).toBe("http://ring.test/");
+      expect(res302(await ringNext(req("/ring/next/x"), ctx(id)))).toBe(new URL("/", SITE_URL).href);
     }
   });
 

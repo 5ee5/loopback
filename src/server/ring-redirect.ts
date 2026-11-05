@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { DEFAULT_RING_ID } from "@/config/site";
+import { DEFAULT_RING_ID, SITE_URL } from "@/config/site";
 import { neighbors, randomMember } from "@/domain/ring";
 import { memberIdSchema } from "@/validation/ids";
 import { listAllMembers } from "./member-repository";
@@ -10,7 +10,7 @@ import { listAllMembers } from "./member-repository";
  * Never throws on bad input: these links live on other people's websites.
  */
 export async function ringRedirect(
-  request: NextRequest,
+  _request: NextRequest,
   kind: "next" | "prev" | "random",
   id?: string,
 ): Promise<NextResponse> {
@@ -26,10 +26,9 @@ export async function ringRedirect(
     target = (kind === "next" ? around?.next : around?.previous)?.url;
   }
 
-  const response = NextResponse.redirect(
-    target ?? new URL("/", request.nextUrl),
-    302,
-  );
+  // The fallback is our public address (SITE_URL), not the request's own: behind a
+  // proxy or tunnel the request URL is the internal one (e.g. localhost:3200).
+  const response = NextResponse.redirect(target ?? new URL("/", SITE_URL), 302);
   response.headers.set("Cache-Control", "no-store");
   return response;
 }
