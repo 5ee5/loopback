@@ -11,7 +11,7 @@ export const envSchema = z.object({
   DATABASE_PATH: z.string().min(1, "DATABASE_PATH must be set (path to the SQLite file)"),
   // Kill switch for the join form. Read on every submission, so it works without a rebuild.
   APPLICATIONS_OPEN: flag("true"),
-  // Only trust x-forwarded-for when the app really sits behind a proxy you control.
+  // Only trust x-forwarded-for when the app really sits behind exactly one proxy you control (its last entry is used).
   TRUST_PROXY: flag("false"),
   // Global cap on applications waiting for review; bounds spam.
   MAX_PENDING_APPLICATIONS: z.coerce.number().int().min(1).max(10_000).default(100),

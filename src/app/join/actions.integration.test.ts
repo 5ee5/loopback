@@ -114,7 +114,7 @@ describe("submitApplication (real SQLite)", () => {
     vi.stubEnv("TRUST_PROXY", "true");
     let ip = "203.0.113.7";
     vi.doMock("next/headers", () => ({
-      headers: async () => new Headers({ "x-forwarded-for": `${ip}, 10.0.0.1` }),
+      headers: async () => new Headers({ "x-forwarded-for": `${ip}` }),
     }));
     for (let i = 0; i < 3; i++) {
       expect((await submit({ ...good, url: `https://a-${i}.example.com` })).status).toBe("success");
@@ -122,5 +122,18 @@ describe("submitApplication (real SQLite)", () => {
     expect((await submit({ ...good, url: "https://a-3.example.com" })).message).toMatch(/too many/i);
     ip = "198.51.100.9"; // a different visitor is unaffected
     expect((await submit({ ...good, url: "https://b-0.example.com" })).status).toBe("success");
+  });
+
+  it("cannot be dodged by sending a fake x-forwarded-for (only the proxy's last entry counts)", async () => {
+    vi.stubEnv("TRUST_PROXY", "true");
+    let fake = 0;
+    vi.doMock("next/headers", () => ({
+      // The visitor rotates a made-up leading address; the proxy appends the real one.
+      headers: async () => new Headers({ "x-forwarded-for": `192.0.2.${++fake}, 203.0.113.50` }),
+    }));
+    for (let i = 0; i < 3; i++) {
+      expect((await submit({ ...good, url: `https://c-${i}.example.com` })).status).toBe("success");
+    }
+    expect((await submit({ ...good, url: "https://c-3.example.com" })).message).toMatch(/too many/i);
   });
 });
