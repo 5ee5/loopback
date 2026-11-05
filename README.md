@@ -27,7 +27,7 @@ Copy `.env.example` to `.env.local`, then `npm run db:migrate` (and `npm run db:
 Add a real member with SQL (the schema rejects invalid rows; the `PRAGMA` turns on foreign-key checks, which `sqlite3` skips by default):
 
 ```sh
-sqlite3 data/webring.db "PRAGMA foreign_keys = ON;
+sqlite3 data/loopback.db "PRAGMA foreign_keys = ON;
 INSERT INTO members (ring_id, display_name, url, description, status, tags)
 VALUES ('main', 'Your Name', 'https://example.com', 'A short description.', 'active', '[\"blog\"]');
 SELECT id FROM members WHERE url = 'https://example.com';"
@@ -45,7 +45,7 @@ From the admin you can also edit members, change their status (suspending needs 
 
 There is no sign-up and no public auth endpoint. Forgot the password? `npm run admin:create -- --force`.
 
-After you have replied to applicants you can delete their emails: `sqlite3 data/webring.db "UPDATE applications SET contact_email = NULL WHERE status <> 'pending';"`.
+After you have replied to applicants you can delete their emails: `sqlite3 data/loopback.db "UPDATE applications SET contact_email = NULL WHERE status <> 'pending';"`.
 
 ## Running it live (one folder)
 
@@ -54,9 +54,9 @@ Development and the live ring share this folder but not their data or build outp
 | | dev | live |
 |---|---|---|
 | settings | `.env.local` | `.env.live` (gitignored, never auto-loaded) |
-| database | `data/webring.db` | `data/live.db` |
+| database | `data/loopback.db` | `data/live.db` |
 | build | `.next` (and `.next/dev`) | `.next-live` (`NEXT_DIST_DIR`) |
-| run | `npm run dev` | pm2 process `webring`, `127.0.0.1:3200` |
+| run | `npm run dev` | pm2 process `loopback`, `127.0.0.1:3200` |
 
 `.env.live` needs `DATABASE_PATH=./data/live.db`, `SITE_URL` (https), `BETTER_AUTH_SECRET`, `ADMIN_EMAIL`, `TRUST_PROXY=true` (exactly one proxy in front), `NEXT_DIST_DIR=.next-live` and an empty `TRUSTED_ORIGINS=`.
 
