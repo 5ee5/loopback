@@ -3,6 +3,7 @@ import { Container } from "@/components/ui/container";
 import { Prose } from "@/components/ui/prose";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/guidelines" },
   title: "Guidelines",
   description: "What a site needs to join and stay in the ring.",
 };

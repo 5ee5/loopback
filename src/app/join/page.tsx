@@ -5,6 +5,7 @@ import { Prose } from "@/components/ui/prose";
 import { JoinForm } from "./join-form";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/join" },
   title: "Join",
   description: "Apply to get your site into the ring.",
 };

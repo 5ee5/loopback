@@ -6,6 +6,7 @@ import { Prose } from "@/components/ui/prose";
 import { SITE_URL, siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/widget" },
   title: "Add the widget",
   description:
     "Add previous, random and next links to your own website. Works on plain HTML, Neocities, WordPress, Astro and SvelteKit.",

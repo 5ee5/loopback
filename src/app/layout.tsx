@@ -25,8 +25,22 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: siteConfig.name, template: `%s · ${siteConfig.name}` },
+  title: {
+    default: `${siteConfig.name} · ${siteConfig.tagline}`,
+    template: `%s · ${siteConfig.name}`,
+  },
   description: siteConfig.description,
+  applicationName: siteConfig.name,
+  // Pages that don't set their own canonical fall back to the home page's.
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    url: "/",
+  },
+  twitter: { card: "summary_large_image", title: siteConfig.name, description: siteConfig.description },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -3,6 +3,7 @@ import { Container } from "@/components/ui/container";
 import { Prose } from "@/components/ui/prose";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/about" },
   title: "About",
   description: "Why this webring exists and what it stands for.",
 };

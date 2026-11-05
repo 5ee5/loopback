@@ -24,7 +24,25 @@ export async function generateMetadata({
   const { id } = await params;
   const member = await findActiveMember(id);
   return member
-    ? { title: member.displayName, description: member.description }
+    ? {
+        title: member.displayName,
+        description: member.description,
+        alternates: { canonical: `/members/${member.id}` },
+        openGraph: {
+          type: "profile",
+          title: member.displayName,
+          description: member.description,
+          url: `/members/${member.id}`,
+          // A page's own openGraph replaces the inherited one, image included.
+          images: ["/opengraph-image"],
+        },
+        twitter: {
+          card: "summary_large_image",
+          title: member.displayName,
+          description: member.description,
+          images: ["/opengraph-image"],
+        },
+      }
     : {};
 }
 

@@ -84,3 +84,11 @@
 - **Deploy** (`scripts/deploy-live.sh`, `npm run live:deploy`): refuses uncommitted changes, migrates `data/live.db`, builds, then restarts (or first starts) pm2 `webring` bound to `127.0.0.1:3200`, and saves pm2's list.
 - **Network path.** Cloudflare -> tunnel (`ring.5ee5.dev` ingress) -> port 3200 directly. nginx on this machine serves only 5ee5.dev (port 88) and is not in the path, so `x-forwarded-for` has exactly one trusted hop; putting another proxy in front would break the last-entry assumption (see M5a).
 
+## Search and sharing
+- **Per page:** title (`template` adds the site name; the home page's default adds the tagline), description, and an explicit canonical URL (`alternates.canonical`, resolved against `metadataBase` = `SITE_URL`). Canonicals are set per page rather than inherited, because the layout's fallback is the home page. Member pages (`/members/[id]`) get their name, description, `og:type=profile` and canonical.
+- **Share card:** `src/app/opengraph-image.tsx` generates one black-and-white 1200x630 image (`next/og`, static at build) used for Open Graph and Twitter (`summary_large_image`). A page that sets its own `openGraph` replaces the inherited one, image included, so member pages list `/opengraph-image` explicitly.
+- **Structured data:** the home page emits JSON-LD (`WebSite` plus an `ItemList` of active members), with `<` escaped so member-supplied text can't close the script tag.
+- **robots.txt** (`src/app/robots.ts`): allows everything except `/admin`, `/ring/` (only redirects to other people's sites) and `/api/`. `/embed` is not blocked on purpose: it is kept out of the index by its `X-Robots-Tag: noindex` header, which a crawler can only read if it may fetch the page. Cloudflare's managed robots.txt is prepended on the live domain (search allowed, AI-training crawlers disallowed); our rules follow it.
+- **sitemap.xml** (`src/app/sitemap.ts`): public pages plus one entry per *active* member (setup, inactive and suspended members are not listed), dated by their join day. Static pages have no `lastmod` rather than an invented one.
+- **Left to the owner:** verifying the domain in Google Search Console and Bing Webmaster Tools (a DNS TXT record in Cloudflare) and submitting `/sitemap.xml`. Tests: `src/app/seo.integration.test.ts`.
+
