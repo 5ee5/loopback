@@ -5,9 +5,9 @@
  * own site name, which is escaped anyway.
  */
 
-const DEFAULT_FG = "#4ade80";
-const DEFAULT_BG = "#06100a";
-const BORDER = "#1d4a2c";
+// Black on white, or white on black, following the visitor's colour scheme.
+const DEFAULT_FG = "light-dark(#000,#fff)";
+const DEFAULT_BG = "light-dark(#fff,#0b0b0b)";
 const HEX = /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/;
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -41,23 +41,37 @@ export function renderEmbedHtml(options: {
 <meta name="robots" content="noindex">
 <title>${name}</title>
 <style>
+:root{color-scheme:light dark}
 html,body{margin:0;height:100%;background:${bg};color:${fg}}
-body{font:14px/1.5 ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace}
-nav{box-sizing:border-box;height:100%;padding:8px 10px;border:1px solid ${BORDER};display:flex;flex-direction:column;justify-content:center;gap:6px}
-a{color:${fg}}
-a:focus-visible{outline:2px solid ${fg};outline-offset:2px}
-.title{font-size:12px;opacity:.8}
-.links{display:flex;flex-wrap:wrap;gap:4px 14px}
+body{display:grid;place-items:center;overflow:hidden;font:700 clamp(10px,min(5vw,20vh),26px)/1.3 ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace}
+nav{box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:center;gap:1em;padding:.5em}
+a{color:inherit;text-decoration:none}
+a:focus-visible{outline:2px solid currentColor;outline-offset:.2em}
+.arrow{display:inline-block;font-size:2.2em;line-height:1;transition:transform .3s cubic-bezier(.175,.885,.32,1.275);animation:in .5s ease both}
+.p{--x:-.25em}
+.n{--x:.25em;animation-delay:.12s}
+.arrow:hover,.arrow:focus-visible{transform:translateX(var(--x))}
+.mid{display:flex;flex-direction:column;align-items:center;gap:.2em;transition:transform .3s cubic-bezier(.175,.885,.32,1.275);animation:in .5s ease .06s both}
+nav:has(.p:hover) .mid,nav:has(.p:focus-visible) .mid{transform:rotate(-6deg)}
+nav:has(.n:hover) .mid,nav:has(.n:focus-visible) .mid{transform:rotate(6deg)}
+.title{font-size:1.2em;letter-spacing:.02em}
+.title::after{content:"_";animation:blink 1.1s steps(1) infinite}
+.rand{font-size:.7em;font-weight:400;opacity:.7;text-decoration:underline;text-underline-offset:.25em;transition:opacity .2s}
+.rand:hover,.rand:focus-visible{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@keyframes in{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:none}}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <nav aria-label="${name}">
+<a class="arrow p" href="/ring/prev/${id}" target="_top"><span aria-hidden="true">&#9664;</span><span class="sr">Previous</span></a>
+<div class="mid">
 <a class="title" href="/" target="_top">${name}</a>
-<div class="links">
-<a href="/ring/prev/${id}" target="_top"><span aria-hidden="true">&larr; </span>Previous</a>
-<a href="/ring/random?from=${id}" target="_top">Random</a>
-<a href="/ring/next/${id}" target="_top">Next<span aria-hidden="true"> &rarr;</span></a>
+<a class="rand" href="/ring/random?from=${id}" target="_top">Random</a>
 </div>
+<a class="arrow n" href="/ring/next/${id}" target="_top"><span aria-hidden="true">&#9654;</span><span class="sr">Next</span></a>
 </nav>
 </body>
 </html>

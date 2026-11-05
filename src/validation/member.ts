@@ -84,7 +84,7 @@ export const memberInputSchema = z.object({
     .transform((tags) => [...new Set(tags)]),
   accentColor: z
     .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, "Use a hex colour like #4ade80")
+    .regex(/^#[0-9a-fA-F]{6}$/, "Use a hex colour like #888888")
     .transform((v) => v.toLowerCase())
     .optional(),
   avatarUrl: urlSchema({ httpsOnly: true }).optional(),

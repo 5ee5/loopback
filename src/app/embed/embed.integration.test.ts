@@ -52,7 +52,7 @@ describe("GET /embed (real data)", () => {
     const ok = await get(`?url=${enc("https://ada.example.com")}&fgcolor=FFF&bgcolor=001122`);
     expect(ok.html).toContain("background:#001122;color:#fff");
     const bad = await get(`?url=${enc("https://ada.example.com")}&fgcolor=red&bgcolor=${enc("0;}x{")}`);
-    expect(bad.html).toContain("background:#06100a;color:#4ade80");
+    expect(bad.html).toContain("background:light-dark(#fff,#0b0b0b);color:light-dark(#000,#fff)");
   });
 
   it("sends headers that allow framing but nothing else", async () => {

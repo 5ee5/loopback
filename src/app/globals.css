@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
-/* Phosphor-terminal palette. Fonts come from next/font (see layout.tsx). */
+/* Monochrome palette: black and white, following the visitor's light/dark
+   preference. Token names are kept from the old terminal theme, so every
+   component flips at once. Fonts come from next/font (see layout.tsx). */
 @theme {
-  --color-background: #040a06;
-  --color-surface: #06100a;
-  --color-raised: #0a1a10;
-  --color-line: #1d4a2c;
-  --color-accent: #4ade80;
-  --color-accent-strong: #166534;
-  --color-on-accent: #d9ffe4;
-  --color-foreground: #c6f6d3;
-  --color-muted: #6fbf88;
-  --color-focus: #4ade80;
+  --color-background: light-dark(#ffffff, #0b0b0b);
+  --color-surface: light-dark(#f6f6f6, #121212);
+  --color-raised: light-dark(#ebebeb, #1c1c1c);
+  --color-line: light-dark(#b8b8b8, #3a3a3a);
+  --color-accent: light-dark(#000000, #ffffff);
+  --color-accent-strong: light-dark(#000000, #ffffff);
+  --color-on-accent: light-dark(#ffffff, #000000);
+  --color-foreground: light-dark(#1a1a1a, #e6e6e6);
+  --color-muted: light-dark(#575757, #9b9b9b);
+  --color-focus: light-dark(#000000, #ffffff);
 
   --font-sans: var(--font-jetbrains), ui-monospace, monospace;
   --font-display: var(--font-vt323), ui-monospace, monospace;
+
+  --ease-overshoot: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 :root {
-  color-scheme: dark;
-  scrollbar-color: var(--color-accent-strong) var(--color-background);
+  color-scheme: light dark;
+  scrollbar-color: var(--color-line) var(--color-background);
   scrollbar-width: thin;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Fades and rises into place; stagger siblings by setting --i on them. */
+@utility reveal {
+  animation: rise 0.6s var(--ease-overshoot) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
 }
 
 body {
@@ -36,7 +59,6 @@ h1 {
   font-weight: 400;
   line-height: 0.95;
   color: var(--color-accent);
-  text-shadow: 0 0 18px rgb(74 222 128 / 0.4);
 }
 
 h2,
@@ -48,6 +70,7 @@ h3 {
 a {
   text-decoration-line: underline;
   text-decoration-color: var(--color-line);
+  transition: text-decoration-color 0.2s, color 0.2s;
   text-underline-offset: 0.2em;
   text-decoration-thickness: 1px;
 }

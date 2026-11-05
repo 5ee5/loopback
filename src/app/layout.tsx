@@ -16,7 +16,12 @@ const vt323 = VT323({
   weight: "400",
 });
 
-export const viewport: Viewport = { themeColor: "#0a1a10" };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0b0b" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

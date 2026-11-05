@@ -22,6 +22,10 @@ function snippet(id: string, attrs = "") {
 <script src="${SITE_URL}/widget/v1.js" data-name="${siteConfig.name}" async></script>`;
 }
 
+function iframeSnippet(siteUrl: string) {
+  return `<iframe src="${SITE_URL}/embed?url=${siteUrl}" width="320" height="100" style="border:0" title="${siteConfig.name}"></iframe>`;
+}
+
 function Code({ children }: { children: string }) {
   return (
     <pre className="card overflow-x-auto p-4 text-sm leading-6">
@@ -49,8 +53,8 @@ function Example({
 }
 
 const themed = {
-  "--webring-color": "#4ade80",
-  "--webring-border": "#4ade80",
+  "--webring-color": "#888888",
+  "--webring-border": "#888888",
   "--webring-radius": "999px",
   "--webring-gap": "1em",
 } as CSSProperties;
@@ -103,7 +107,7 @@ export default function WidgetPage() {
             title="Custom colours and shape"
             code={snippet(
               DEMO_ID,
-              ' style="--webring-color:#4ade80; --webring-border:#4ade80; --webring-radius:999px; --webring-gap:1em"',
+              ' style="--webring-color:#888888; --webring-border:#888888; --webring-radius:999px; --webring-gap:1em"',
             )}
           >
             <webring-nav member={DEMO_ID} style={themed}>
@@ -112,6 +116,32 @@ export default function WidgetPage() {
               <a href={`/ring/next/${DEMO_ID}`}>Next</a>
             </webring-nav>
           </Example>
+        </section>
+
+        <section aria-labelledby="iframe" className="mt-16 space-y-5">
+          <h2 id="iframe" className="text-xl text-accent">
+            <span aria-hidden="true" className="text-muted">$ </span>
+            No scripts? Use an iframe
+          </h2>
+          <Prose>
+            <p>
+              If your site can&rsquo;t run scripts, paste one line and replace{" "}
+              <code>https://your-site.com</code> with your site&rsquo;s address
+              exactly as you registered it. No member ID needed.
+            </p>
+          </Prose>
+          <Code>{iframeSnippet("https://your-site.com")}</Code>
+          <Prose>
+            <p>
+              Optional <code>fgcolor</code> and <code>bgcolor</code> take hex
+              colours without the <code>#</code>, for example{" "}
+              <code>&amp;fgcolor=fff&amp;bgcolor=000</code>. The frame is blank
+              until your site is a member. It loads no scripts, images or
+              cookies, and its links open in the visitor&rsquo;s own window. If
+              you change your site&rsquo;s address, update the snippet. For more
+              styling control, use the widget above.
+            </p>
+          </Prose>
         </section>
 
         <section aria-labelledby="button" className="mt-16 space-y-5">

@@ -46,7 +46,7 @@ export function MemberEditForm({
         )}
       </FormField>
 
-      <FormField name="accentColor" label="Accent colour" hint="Optional, like #4ade80. Leave empty for none." error={errors.accentColor}>
+      <FormField name="accentColor" label="Accent colour" hint="Optional, like #888888. Leave empty for none." error={errors.accentColor}>
         {({ id: fid, describedBy, invalid }) => (
           <input id={fid} name="accentColor" maxLength={7} defaultValue={values.accentColor} aria-invalid={invalid} aria-describedby={describedBy} className={inputClass} />
         )}

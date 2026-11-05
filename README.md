@@ -18,7 +18,7 @@ An independent webring connecting personal websites. See `docs/architecture.md` 
 
 The embeddable widget lives in `widget/` (see `docs/architecture.md`). `npm run build:widget` copies it to `public/widget/v1.js`; `dev` and `build` do this automatically. Install instructions are served at `/widget`.
 
-For sites that can't run scripts there is also a one-line iframe: `<iframe src="https://YOUR-RING/embed?url=https://your-site.com" width="320" height="70"></iframe>` (optional `fgcolor` and `bgcolor`, hex without `#`).
+For sites that can't run scripts there is also a one-line iframe: `<iframe src="https://YOUR-RING/embed?url=https://your-site.com" width="320" height="100"></iframe>` (optional `fgcolor` and `bgcolor`, hex without `#`).
 
 ## Database and members
 
@@ -38,7 +38,7 @@ Change a status with `UPDATE members SET status = 'suspended' WHERE id = '...'`.
 ## Admin
 
 1. In `.env.local` set `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) and `ADMIN_EMAIL` (the address you will sign in with).
-2. `npm run db:migrate`, then `npm run admin:create` and type a password (12+ characters).
+2. `npm run db:migrate`, then `npm run admin:create` and type a password (8+ characters).
 3. Sign in at `/admin/login`. There you approve or reject applications (you see the applicant's email there, and only there) and mark members live. Approving makes the member "setting up"; **Mark live** puts them in the ring. Email the applicant their member ID yourself.
 
 From the admin you can also edit members, change their status (suspending needs a private reason), remove them (you must type their name), and read the audit log of everything you did (`/admin/log`, append-only).

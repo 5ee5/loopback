@@ -14,7 +14,7 @@ describe("renderEmbedHtml", () => {
   it("uses valid colours and falls back to defaults for invalid ones", () => {
     expect(renderEmbedHtml({ ...base, fg: "#abc", bg: "#112233" })).toContain("background:#112233;color:#abc");
     const html = renderEmbedHtml({ ...base, fg: "red;}x{", bg: "url(x)" });
-    expect(html).toContain("background:#06100a;color:#4ade80");
+    expect(html).toContain("background:light-dark(#fff,#0b0b0b);color:light-dark(#000,#fff)");
     expect(html).not.toContain("url(x)");
   });
 
