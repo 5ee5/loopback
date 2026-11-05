@@ -31,7 +31,7 @@ function createAuth() {
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,
-      minPasswordLength: 12,
+      minPasswordLength: 8,
       maxPasswordLength: 128,
     },
     // Short-lived admin sessions: sign in again after 8 hours.

@@ -16,8 +16,8 @@ const EMAIL = /^[^\s@]+@[^\s@.][^\s@]*\.[^\s@]+$/;
 export async function createAdmin({ file, email, password, force = false }) {
   const normalized = String(email ?? "").trim().toLowerCase();
   if (!EMAIL.test(normalized) || normalized.length > 254) throw new Error("That is not a valid email address.");
-  if (typeof password !== "string" || password.length < 12 || password.length > 128) {
-    throw new Error("The password must be 12 to 128 characters long.");
+  if (typeof password !== "string" || password.length < 8 || password.length > 128) {
+    throw new Error("The password must be 8 to 128 characters long.");
   }
 
   const hash = await hashPassword(password);
@@ -91,7 +91,7 @@ async function main() {
     if (!file) throw new Error("Set DATABASE_PATH in .env.local first, and run `npm run db:migrate`.");
 
     const ask = createPrompter();
-    const password = await ask("New admin password (12+ characters, hidden): ");
+    const password = await ask("New admin password (8+ characters, hidden): ");
     const again = await ask("Type it again: ");
     if (password !== again) throw new Error("The passwords didn't match.");
 
