@@ -4,10 +4,10 @@ import { EMBED_HEADERS, EMPTY_EMBED_HTML, escapeHtml, renderEmbedHtml } from "./
 const base = { memberId: "m_418513f6", siteName: "Webring" };
 
 describe("renderEmbedHtml", () => {
-  it("links prev/random/next for the member, opening in the top window", () => {
+  it("links prev/next for the member, opening in the top window, and has no random link", () => {
     const html = renderEmbedHtml(base);
     expect(html).toContain('href="/ring/prev/m_418513f6" target="_top"');
-    expect(html).toContain('href="/ring/random?from=m_418513f6" target="_top"');
+    expect(html).not.toContain("/ring/random");
     expect(html).toContain('href="/ring/next/m_418513f6" target="_top"');
   });
 

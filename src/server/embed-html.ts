@@ -66,8 +66,6 @@ nav:has(.n:hover) .mid,nav:has(.n:focus-visible) .mid{transform:rotate(6deg)}
 nav:has(.p:hover) .logo,nav:has(.p:focus-visible) .logo{transform:rotate(-72deg)}
 nav:has(.n:hover) .logo,nav:has(.n:focus-visible) .logo{transform:rotate(72deg)}
 .title::after{content:"_";animation:blink 1.1s steps(1) infinite}
-.rand{font-size:.7em;font-weight:400;opacity:.7;text-decoration:underline;text-underline-offset:.25em;transition:opacity .2s}
-.rand:hover,.rand:focus-visible{opacity:1}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @keyframes in{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:none}}
 @keyframes blink{50%{opacity:0}}
@@ -79,7 +77,6 @@ nav:has(.n:hover) .logo,nav:has(.n:focus-visible) .logo{transform:rotate(72deg)}
 <a class="arrow p" href="/ring/prev/${id}" target="_top"><span aria-hidden="true">&#9664;</span><span class="sr">Previous</span></a>
 <div class="mid">
 <a class="title" href="/" target="_top">${LOGO_SVG}${name}</a>
-<a class="rand" href="/ring/random?from=${id}" target="_top">Random</a>
 </div>
 <a class="arrow n" href="/ring/next/${id}" target="_top"><span aria-hidden="true">&#9654;</span><span class="sr">Next</span></a>
 </nav>
