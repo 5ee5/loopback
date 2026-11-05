@@ -24,7 +24,7 @@ export default async function Home() {
         ) : (
           <ul className="grid gap-6 md:grid-cols-2">
             {active.map((m, i) => (
-              <MemberCard key={m.id} member={m} position={i + 1} index={Math.min(i, 10)} />
+              <MemberCard key={m.id} member={m} position={i} index={Math.min(i, 10)} />
             ))}
             {settingUp.map((m, i) => (
               <MemberCard key={m.id} member={m} index={Math.min(active.length + i, 10)} />

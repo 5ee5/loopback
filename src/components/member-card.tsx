@@ -12,7 +12,7 @@ export function formatJoined(joinedAt: string): string {
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 /**
- * A member card. `position` is the member's place in the ring (1-based); it is
+ * A member card. `position` is the member's place in the ring (0-based: the first member is 00); it is
  * shown as a large, faint, decorative number behind the text.
  */
 export function MemberCard({
