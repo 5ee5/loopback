@@ -46,3 +46,20 @@ From the admin you can also edit members, change their status (suspending needs 
 There is no sign-up and no public auth endpoint. Forgot the password? `npm run admin:create -- --force`.
 
 After you have replied to applicants you can delete their emails: `sqlite3 data/webring.db "UPDATE applications SET contact_email = NULL WHERE status <> 'pending';"`.
+
+## Running it live (one folder)
+
+Development and the live ring share this folder but not their data or build output:
+
+| | dev | live |
+|---|---|---|
+| settings | `.env.local` | `.env.live` (gitignored, never auto-loaded) |
+| database | `data/webring.db` | `data/live.db` |
+| build | `.next` (and `.next/dev`) | `.next-live` (`NEXT_DIST_DIR`) |
+| run | `npm run dev` | pm2 process `webring`, `127.0.0.1:3200` |
+
+`.env.live` needs `DATABASE_PATH=./data/live.db`, `SITE_URL` (https), `BETTER_AUTH_SECRET`, `ADMIN_EMAIL`, `TRUST_PROXY=true` (exactly one proxy in front), `NEXT_DIST_DIR=.next-live` and an empty `TRUSTED_ORIGINS=`.
+
+- `npm run live:admin` creates (or with `-- --force` resets) the live admin account.
+- `npm run live:deploy` migrates the live database, builds into `.next-live`, restarts pm2 and saves its list. It refuses uncommitted changes (`ALLOW_DIRTY=1` overrides), so what goes live is what is committed.
+- The public address comes from a Cloudflare Tunnel ingress entry (`/etc/cloudflared/config.yml`) pointing at port 3200.

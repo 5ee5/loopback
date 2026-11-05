@@ -19,7 +19,10 @@
     "db:seed": "node scripts/reset-db.mjs seed",
     "test:integration": "vitest run --config vitest.integration.config.mts",
     "db:reset:test": "node scripts/reset-db.mjs test",
-    "admin:create": "node scripts/create-admin.mjs"
+    "admin:create": "node scripts/create-admin.mjs",
+    "live:migrate": "scripts/live.sh npm run db:migrate",
+    "live:admin": "scripts/live.sh npm run admin:create",
+    "live:deploy": "scripts/deploy-live.sh"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.15",

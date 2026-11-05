@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // The live site builds into its own directory (NEXT_DIST_DIR=.next-live, set in
+  // .env.live) so dev work, tests and the e2e build can never overwrite what pm2 serves.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   async headers() {
     return [
       {
