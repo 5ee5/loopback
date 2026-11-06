@@ -9,6 +9,13 @@ const hexColor = z
   .optional()
   .catch(undefined);
 
+/** `name=off` shows the logo without the site name; anything else keeps the name. */
+const showName = z
+  .string()
+  .transform((value) => value !== "off")
+  .optional()
+  .catch(undefined);
+
 /**
  * Query parameters of /embed. Only `url` can make the request fail (to an empty
  * frame); a bad colour is simply ignored. Nothing else in the query string is
@@ -18,6 +25,7 @@ export const embedParamsSchema = z.object({
   url: siteUrlSchema,
   fgcolor: hexColor,
   bgcolor: hexColor,
+  name: showName,
 });
 
 export type EmbedParams = z.infer<typeof embedParamsSchema>;

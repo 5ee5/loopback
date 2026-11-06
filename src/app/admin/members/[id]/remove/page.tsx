@@ -35,7 +35,7 @@ async function Confirm({ params, searchParams }: PageProps<"/admin/members/[id]/
         </p>
       )}
       <p>
-        This permanently deletes the member ({member.url}). Their widget will keep working from its old position
+        This permanently deletes the member ({member.url}). Their embed will keep working from its old position
         until they take it down, and they can apply again. The audit log keeps a record of the removal.
       </p>
       <form action={removeMemberAction} className="card space-y-4 p-5">

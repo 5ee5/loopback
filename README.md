@@ -10,24 +10,13 @@ Apply at https://ring.5ee5.dev/join. Applications are reviewed by hand; the guid
 
 ## Add it to your site
 
-Paste this where you want the links, replacing `YOUR_ID` with your member ID:
-
-```html
-<webring-nav member="YOUR_ID">
-  <a href="https://ring.5ee5.dev/ring/prev/YOUR_ID">Previous</a>
-  <a href="https://ring.5ee5.dev/ring/random?from=YOUR_ID">Random</a>
-  <a href="https://ring.5ee5.dev/ring/next/YOUR_ID">Next</a>
-</webring-nav>
-<script src="https://ring.5ee5.dev/widget/v1.js" data-name="Loopback" async></script>
-```
-
-The plain links are a fallback, so they still work if the script is blocked. If your site can't run scripts, use a one-line iframe instead (no member ID needed):
+Paste one line where you want the links (no member ID needed; use your site's address exactly as you registered it):
 
 ```html
 <iframe src="https://ring.5ee5.dev/embed?url=https://your-site.com" width="320" height="100" style="border:0" title="Loopback"></iframe>
 ```
 
-Optional `fgcolor` and `bgcolor` parameters take hex colours without the `#`. More options and live previews are at https://ring.5ee5.dev/widget, and there is an 88×31 button too.
+It loads no scripts, images or cookies. Optional `fgcolor` and `bgcolor` parameters take hex colours without the `#`, and `name=off` shows the logo alone. Live previews and an 88×31 button are at https://ring.5ee5.dev/widget.
 
 ## Built with
 

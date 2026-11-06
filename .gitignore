@@ -49,8 +49,6 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 
-# generated widget copy
-/public/widget/
 !.env.example
 
 # local SQLite databases

@@ -31,12 +31,15 @@ export function renderEmbedHtml(options: {
   siteName: string;
   fg?: string;
   bg?: string;
+  /** false: logo only. The name stays in the link's accessible name. */
+  showName?: boolean;
 }): string {
   if (!ID.test(options.memberId)) return EMPTY_EMBED_HTML; // defence in depth: ids are validated upstream too
   const fg = options.fg && HEX.test(options.fg) ? options.fg : DEFAULT_FG;
   const bg = options.bg && HEX.test(options.bg) ? options.bg : DEFAULT_BG;
   const id = options.memberId;
   const name = escapeHtml(options.siteName);
+  const logoOnly = options.showName === false;
 
   // Links are relative: they resolve against this document, i.e. the ring's own
   // origin. target="_top" makes them open in the visitor's window, not the frame.
@@ -66,6 +69,7 @@ nav:has(.n:hover) .mid,nav:has(.n:focus-visible) .mid{transform:rotate(6deg)}
 nav:has(.p:hover) .logo,nav:has(.p:focus-visible) .logo{transform:rotate(-72deg)}
 nav:has(.n:hover) .logo,nav:has(.n:focus-visible) .logo{transform:rotate(72deg)}
 .title::after{content:"_";animation:blink 1.1s steps(1) infinite}
+${logoOnly ? ".title::after{content:none}.logo{width:2.4em;height:2.4em;margin:0}" : ""}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @keyframes in{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:none}}
 @keyframes blink{50%{opacity:0}}
@@ -76,7 +80,7 @@ nav:has(.n:hover) .logo,nav:has(.n:focus-visible) .logo{transform:rotate(72deg)}
 <nav aria-label="${name}">
 <a class="arrow p" href="/ring/prev/${id}" target="_top"><span aria-hidden="true">&#9664;</span><span class="sr">Previous</span></a>
 <div class="mid">
-<a class="title" href="/" target="_top">${LOGO_SVG}${name}</a>
+<a class="title" href="/" target="_top">${LOGO_SVG}${logoOnly ? `<span class="sr">${name}</span>` : name}</a>
 </div>
 <a class="arrow n" href="/ring/next/${id}" target="_top"><span aria-hidden="true">&#9654;</span><span class="sr">Next</span></a>
 </nav>

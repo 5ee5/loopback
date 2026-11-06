@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     url: query.get("url") ?? "",
     fgcolor: query.get("fgcolor") ?? undefined,
     bgcolor: query.get("bgcolor") ?? undefined,
+    name: query.get("name") ?? undefined,
   });
 
   const member = parsed.success ? await findMemberByUrl(parsed.data.url) : null;
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
           siteName: siteConfig.name,
           fg: parsed.data.fgcolor,
           bg: parsed.data.bgcolor,
+          showName: parsed.data.name,
         })
       : EMPTY_EMBED_HTML;
 

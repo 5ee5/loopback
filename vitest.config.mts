@@ -12,7 +12,7 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["src/**/*.test.{ts,tsx}", "widget/**/*.test.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
     // Need a real Postgres: run with `npm run test:integration`.
     exclude: ["**/*.integration.test.ts", "node_modules/**"],
   },

@@ -72,7 +72,7 @@ export const members = sqliteTable(
   (t) => [
     uniqueIndex("members_ring_url_unique").on(t.ringId, t.url),
     index("members_ring_order").on(t.ringId, t.status, t.joinedAt, t.id),
-    // The id is used in URLs and by the widget (pattern shared with the widget).
+    // The id is used in URLs and by the embed (pattern shared with it).
     check(
       "members_id_format",
       sql`length(${t.id}) BETWEEN 1 AND 64 AND ${t.id} NOT GLOB '*[^A-Za-z0-9_-]*'`,

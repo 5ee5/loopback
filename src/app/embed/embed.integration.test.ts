@@ -21,6 +21,13 @@ describe("GET /embed (real data)", () => {
     expect(html).toContain('href="/ring/prev/m_a1b2c3"');
   });
 
+  it("hides the name with name=off and ignores any other value", async () => {
+    const off = await get(`?url=${enc("https://ada.example.com")}&name=off`);
+    expect(off.html).toContain("content:none");
+    const other = await get(`?url=${enc("https://ada.example.com")}&name=yes`);
+    expect(other.html).not.toContain("content:none");
+  });
+
   it("matches the canonical form of the address (case, trailing slash)", async () => {
     const { html } = await get(`?url=${enc("HTTPS://Ada.Example.com/")}`);
     expect(html).toContain("/ring/next/m_a1b2c3");

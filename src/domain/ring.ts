@@ -5,7 +5,7 @@ import { isActive, isVisible, type Member } from "./member";
  *
  * Ring order is fixed and deterministic: join date, then id. Only active
  * members are ever navigated *to*. A visitor coming from a member who is no
- * longer active (e.g. their widget is still installed) still gets sensible
+ * longer active (e.g. their embed is still on their site) still gets sensible
  * previous/next targets, found by their position in the full ordering.
  */
 

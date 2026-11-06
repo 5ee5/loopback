@@ -48,6 +48,21 @@ describe("the logo in the embed", () => {
   });
 });
 
+describe("logo-only embed (name=off)", () => {
+  const html = renderEmbedHtml({ ...base, showName: false });
+
+  it("keeps the logo and the links but shows no visible name", () => {
+    expect(html.match(/<circle /g)).toHaveLength(5);
+    expect(html).toContain('<span class="sr">Webring</span></a>');
+    expect(html).toContain("/ring/next/");
+    expect(html).toContain(".title::after{content:none}");
+  });
+
+  it("is the default when showName is not given", () => {
+    expect(renderEmbedHtml(base)).not.toContain("content:none");
+  });
+});
+
 describe("escapeHtml", () => {
   it("escapes the five special characters", () => {
     expect(escapeHtml(`&<>"'`)).toBe("&amp;&lt;&gt;&quot;&#39;");
