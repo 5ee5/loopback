@@ -2,8 +2,8 @@ import { Suspense } from "react";
 import { loadAdminData } from "@/server/admin-data";
 import { requireAdmin } from "@/server/auth";
 import { AdminShell } from "./admin-shell";
-import { approveApplicationAction, markLiveAction, rejectApplicationAction } from "./actions";
-import { welcomeMailto } from "./applicant-mail";
+import { approveApplicationAction, markLiveAction, markRepliedAction, rejectApplicationAction } from "./actions";
+import { rejectionMailto, welcomeMailto } from "./applicant-mail";
 import { when } from "./format";
 import { noticeFor } from "./notices";
 
@@ -20,7 +20,7 @@ export default function AdminPage({ searchParams }: PageProps<"/admin">) {
 
 async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["searchParams"] }) {
   const admin = await requireAdmin();
-  const { pending, settingUp } = loadAdminData(admin);
+  const { pending, settingUp, rejected } = loadAdminData(admin);
   const notice = noticeFor((await searchParams).notice);
 
   return (
@@ -113,9 +113,47 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
                       <span className="text-sm text-muted">no email on file</span>
                     );
                   })()}
+                  {m.applicationId && m.repliedAt ? (
+                    <span className="text-sm text-muted">emailed {when(m.repliedAt)}</span>
+                  ) : (
+                    m.applicationId && (
+                      <form action={markRepliedAction}>
+                        <input type="hidden" name="id" value={m.applicationId} />
+                        <button type="submit" className="btn">tick emailed</button>
+                      </form>
+                    )
+                  )}
                   <form action={markLiveAction}>
                     <input type="hidden" name="id" value={m.id} />
                     <button type="submit" className="btn">mark live</button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section aria-labelledby="rejected">
+        <h2 id="rejected" className="prompt">
+          $ ls applications/rejected --unanswered
+          <span className="ml-3 text-muted/70"># {rejected.length}</span>
+        </h2>
+        {rejected.length === 0 ? (
+          <p className="text-muted">Everyone rejected has been answered.</p>
+        ) : (
+          <ul className="space-y-4">
+            {rejected.map((a) => (
+              <li key={a.id} className="card flex flex-wrap items-center justify-between gap-4 p-5">
+                <div>
+                  <h3 className="text-lg text-accent">{a.displayName}</h3>
+                  <p className="mt-1 break-all text-sm text-muted">{a.url}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-4">
+                  <a href={rejectionMailto(a.contactEmail, a) ?? undefined} className="btn">email applicant</a>
+                  <form action={markRepliedAction}>
+                    <input type="hidden" name="id" value={a.id} />
+                    <button type="submit" className="btn">tick emailed</button>
                   </form>
                 </div>
               </li>

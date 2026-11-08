@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull, ne } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { applications, members } from "@/db/schema";
 import type { MemberStatus } from "@/domain/member";
@@ -99,6 +99,24 @@ export function rejectApplication(admin: AdminSession, id: string, note: string 
 }
 
 // ---- Members ---------------------------------------------------------------
+
+export type MarkRepliedResult = { status: "replied" } | { status: "not_found" };
+
+/**
+ * Ticks "emailed" on a decided application. The email itself is sent by hand
+ * from the admin's mail client, so this only records that it was done. Not an
+ * audit event: the audit log's action list is a CHECK constraint, and
+ * widening it means rebuilding that append-only table.
+ */
+export function markApplicantReplied(_admin: AdminSession, id: string): MarkRepliedResult {
+  const row = getDb()
+    .update(applications)
+    .set({ repliedAt: new Date() })
+    .where(and(eq(applications.id, id), ne(applications.status, "pending"), isNull(applications.repliedAt)))
+    .returning({ id: applications.id })
+    .get();
+  return row ? { status: "replied" } : { status: "not_found" };
+}
 
 export type MarkLiveResult = { status: "live" } | { status: "not_setup" };
 

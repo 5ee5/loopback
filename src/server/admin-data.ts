@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { adminEvents, applications, members } from "@/db/schema";
 import type { MemberStatus } from "@/domain/member";
@@ -23,13 +23,33 @@ export function loadAdminData(_admin: AdminSession) {
       .all(),
     // contactEmail comes from the approved application (null once it was deleted).
     settingUp: db
-      .select({ member: members, contactEmail: applications.contactEmail })
+      .select({
+        member: members,
+        contactEmail: applications.contactEmail,
+        applicationId: applications.id,
+        repliedAt: applications.repliedAt,
+      })
       .from(members)
       .leftJoin(applications, eq(applications.memberId, members.id))
       .where(eq(members.status, "setup"))
       .orderBy(asc(members.joinedAt), asc(members.id))
       .all()
-      .map((row) => ({ ...row.member, contactEmail: row.contactEmail })),
+      .map((row) => ({
+        ...row.member,
+        contactEmail: row.contactEmail,
+        applicationId: row.applicationId,
+        repliedAt: row.repliedAt,
+      })),
+    // Rejected applicants still waiting for a reply (and whose address is still on file).
+    rejected: db
+      .select()
+      .from(applications)
+      .where(
+        and(eq(applications.status, "rejected"), isNotNull(applications.contactEmail), isNull(applications.repliedAt)),
+      )
+      .orderBy(desc(applications.decidedAt), desc(applications.id))
+      .limit(20)
+      .all(),
   };
 }
 

@@ -18,9 +18,9 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-import { approveApplicationAction, markLiveAction, rejectApplicationAction } from "../app/admin/actions";
+import { approveApplicationAction, markLiveAction, markRepliedAction, rejectApplicationAction } from "../app/admin/actions";
 import { getAdmin, getAuth, requireAdmin, type AdminSession } from "./auth";
-import { approveApplication, markMemberLive, rejectApplication } from "./admin-service";
+import { approveApplication, markApplicantReplied, markMemberLive, rejectApplication } from "./admin-service";
 import { loadAdminData } from "./admin-data";
 
 const ADMIN = { email: "admin@example.com", password: "correct-horse-battery-staple" };
@@ -214,6 +214,36 @@ describe("admin service", () => {
     expect(data.settingUp.map((m) => m.id)).toEqual(["m_z9y8x7w6"]);
   });
 
+  it("rejected applicants waiting for a reply are listed until ticked or their email is deleted", async () => {
+    const who = await admin();
+    const a = addApplication({ display_name: "Nope" });
+    const b = addApplication({ display_name: "Nope Too" });
+    expect(rejectApplication(who, a.id, "private reason").status).toBe("rejected");
+    expect(rejectApplication(who, b.id, null).status).toBe("rejected");
+    expect(loadAdminData(who).rejected.map((r) => r.id).sort()).toEqual([a.id, b.id].sort());
+
+    expect(markApplicantReplied(who, a.id)).toEqual({ status: "replied" });
+    expect(loadAdminData(who).rejected.map((r) => r.id)).toEqual([b.id]);
+
+    raw.prepare("UPDATE applications SET contact_email = NULL WHERE id = ?").run(b.id);
+    expect(loadAdminData(who).rejected).toEqual([]);
+  });
+
+  it("ticking emailed works once, never on a pending application, and the tick shows on the setup card", async () => {
+    const who = await admin();
+    const pending = addApplication();
+    expect(markApplicantReplied(who, pending.id)).toEqual({ status: "not_found" });
+    expect(row("SELECT replied_at FROM applications WHERE id = ?", pending.id)).toEqual({ replied_at: null });
+
+    expect(approveApplication(who, pending.id).status).toBe("approved");
+    const card = () => loadAdminData(who).settingUp.find((m) => m.url === pending.url);
+    expect(card()?.applicationId).toBe(pending.id);
+    expect(card()?.repliedAt).toBeNull();
+    expect(markApplicantReplied(who, pending.id)).toEqual({ status: "replied" });
+    expect(card()?.repliedAt).toBeInstanceOf(Date);
+    expect(markApplicantReplied(who, pending.id)).toEqual({ status: "not_found" }); // already ticked
+  });
+
   it("members in setup carry the applicant's email, or null once it was deleted", async () => {
     const a = addApplication();
     const who = await admin();
@@ -296,6 +326,16 @@ describe("admin Server Actions", () => {
     expect(await redirectOf(() => markLiveAction(form({ id: "has space" })))).toBe("/admin?notice=invalid");
     expect(row("SELECT status FROM applications WHERE id = ?", a.id)).toEqual({ status: "pending" });
     expect(row("SELECT count(*) AS n FROM members")).toEqual({ n: SEED_MEMBER_IDS.length });
+  });
+});
+
+describe("tick-emailed Server Action", () => {
+  it("sends signed-out visitors to the login page and rejects malformed ids", async () => {
+    const a = addApplication();
+    expect(await redirectOf(() => markRepliedAction(form({ id: a.id })))).toBe("/admin/login");
+    request.headers = await signedIn();
+    expect(await redirectOf(() => markRepliedAction(form({ id: "nope" })))).toBe("/admin?notice=invalid");
+    expect(await redirectOf(() => markRepliedAction(form({ id: a.id })))).toBe("/admin?notice=not_replied"); // still pending
   });
 });
 

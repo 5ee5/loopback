@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { welcomeBody, welcomeMailto } from "./applicant-mail";
+import { rejectionMailto, welcomeBody, welcomeMailto } from "./applicant-mail";
 
 const member = { id: "m_a1b2c3", displayName: "Fox & Co", url: "https://fox.example/?a=1&b=2" };
 
@@ -21,5 +21,20 @@ describe("welcomeMailto", () => {
     const body = welcomeBody(member);
     expect(body).toContain("m_a1b2c3");
     expect(body).toContain("/embed?url=https://fox.example/?a=1&b=2");
+  });
+});
+
+describe("rejectionMailto", () => {
+  it("returns null when the email was deleted", () => {
+    expect(rejectionMailto(null, member)).toBeNull();
+  });
+
+  it("is polite, names the site and gives no reason", () => {
+    const link = rejectionMailto("fox@example.com", member)!;
+    expect(link.startsWith("mailto:fox@example.com?")).toBe(true);
+    expect(link).not.toContain("+");
+    const body = new URL(link).searchParams.get("body")!;
+    expect(body).toContain("Fox & Co");
+    expect(body).toContain(member.url);
   });
 });

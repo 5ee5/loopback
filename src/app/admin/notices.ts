@@ -2,6 +2,8 @@
 const NOTICES: Record<string, string> = {
   approved: "Approved. The member is now setting up.",
   rejected: "Rejected.",
+  replied: "Ticked as emailed.",
+  not_replied: "That one was already ticked, or is still pending.",
   live: "Marked live. They are in the ring.",
   updated: "Saved.",
   unchanged: "Nothing changed.",

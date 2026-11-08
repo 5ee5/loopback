@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
   approveApplication,
+  markApplicantReplied,
   markMemberLive,
   rejectApplication,
   removeMember,
@@ -45,6 +46,14 @@ export async function rejectApplicationAction(form: FormData): Promise<void> {
   if (!id.success || !note.success) done("invalid");
 
   done(rejectApplication(admin, id.data, note.data || null).status);
+}
+
+export async function markRepliedAction(form: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const id = applicationIdSchema.safeParse(form.get("id"));
+  if (!id.success) done("invalid");
+
+  done(markApplicantReplied(admin, id.data).status === "replied" ? "replied" : "not_replied");
 }
 
 export async function markLiveAction(form: FormData): Promise<void> {

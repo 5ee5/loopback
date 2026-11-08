@@ -29,13 +29,33 @@ export function welcomeBody(member: { id: string; displayName: string; url: stri
   ].join("\n");
 }
 
+export function rejectionBody(application: { displayName: string; url: string }): string {
+  return [
+    `Hi,`,
+    ``,
+    `Thank you for applying to add ${application.displayName} (${application.url}) to ${siteConfig.name}.`,
+    ``,
+    `I'm not able to add it to the ring right now. Thanks for your interest, and you are welcome to apply again in the future.`,
+  ].join("\n");
+}
+
+function mailto(email: string, subject: string, body: string): string {
+  const params = new URLSearchParams({ subject, body });
+  // URLSearchParams encodes spaces as "+", which mail clients show literally in mailto: links.
+  return `mailto:${encodeURIComponent(email).replace(/%40/g, "@")}?${params.toString().replace(/\+/g, "%20")}`;
+}
+
+/** Reply to a rejected applicant. Never includes the private decision note. */
+export function rejectionMailto(email: string | null, application: { displayName: string; url: string }): string | null {
+  if (!email) return null;
+  return mailto(email, `Your ${siteConfig.name} application`, rejectionBody(application));
+}
+
 /** `null` when the applicant's address is gone (the operator may have deleted it after replying). */
 export function welcomeMailto(
   email: string | null,
   member: { id: string; displayName: string; url: string },
 ): string | null {
   if (!email) return null;
-  const params = new URLSearchParams({ subject: welcomeSubject(), body: welcomeBody(member) });
-  // URLSearchParams encodes spaces as "+", which mail clients show literally in mailto: links.
-  return `mailto:${encodeURIComponent(email).replace(/%40/g, "@")}?${params.toString().replace(/\+/g, "%20")}`;
+  return mailto(email, welcomeSubject(), welcomeBody(member));
 }

@@ -146,6 +146,8 @@ export const applications = sqliteTable(
     decidedBy: text("decided_by"),
     // Internal note. Never shown to the applicant or publicly.
     decisionNote: text("decision_note"),
+    // When the admin ticked "emailed": the applicant was told the outcome (by hand, in their own mail client).
+    repliedAt: integer("replied_at", { mode: "timestamp" }),
     // The member created on approval; cleared if that member is later deleted.
     memberId: text("member_id").references(() => members.id, {
       onDelete: "set null",

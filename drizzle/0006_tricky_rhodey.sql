@@ -1,0 +1,1 @@
+ALTER TABLE `applications` ADD `replied_at` integer;
