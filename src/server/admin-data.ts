@@ -21,12 +21,15 @@ export function loadAdminData(_admin: AdminSession) {
       .where(eq(applications.status, "pending"))
       .orderBy(asc(applications.submittedAt), asc(applications.id))
       .all(),
+    // contactEmail comes from the approved application (null once it was deleted).
     settingUp: db
-      .select()
+      .select({ member: members, contactEmail: applications.contactEmail })
       .from(members)
+      .leftJoin(applications, eq(applications.memberId, members.id))
       .where(eq(members.status, "setup"))
       .orderBy(asc(members.joinedAt), asc(members.id))
-      .all(),
+      .all()
+      .map((row) => ({ ...row.member, contactEmail: row.contactEmail })),
   };
 }
 

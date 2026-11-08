@@ -213,6 +213,20 @@ describe("admin service", () => {
     expect(data.pending[0]?.contactEmail).toBe("pending@example.com");
     expect(data.settingUp.map((m) => m.id)).toEqual(["m_z9y8x7w6"]);
   });
+
+  it("members in setup carry the applicant's email, or null once it was deleted", async () => {
+    const a = addApplication();
+    const who = await admin();
+    const approved = approveApplication(who, a.id);
+    expect(approved.status).toBe("approved");
+    const find = () => loadAdminData(who).settingUp.find((m) => m.url === a.url);
+    expect(find()?.contactEmail).toBe("pending@example.com");
+
+    raw.prepare("UPDATE applications SET contact_email = NULL WHERE id = ?").run(a.id);
+    expect(find()?.contactEmail).toBeNull();
+    // The seeded setup member has no application at all.
+    expect(loadAdminData(who).settingUp.find((m) => m.id === "m_z9y8x7w6")?.contactEmail).toBeNull();
+  });
 });
 
 describe("admin Server Actions", () => {

@@ -21,7 +21,7 @@ Change a status with `UPDATE members SET status = 'suspended' WHERE id = '...'`.
 
 1. In `.env.local` set `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) and `ADMIN_EMAIL` (the address you will sign in with).
 2. `npm run db:migrate`, then `npm run admin:create` and type a password (8+ characters).
-3. Sign in at `/admin/login`. There you approve or reject applications (you see the applicant's email there, and only there) and mark members live. Approving makes the member "setting up"; **Mark live** puts them in the ring. Email the applicant their member ID yourself.
+3. Sign in at `/admin/login`. There you approve or reject applications (you see the applicant's email there, and only there) and mark members live. Approving makes the member "setting up"; **Mark live** puts them in the ring. On a "setting up" card, **email applicant** opens your mail client with a prefilled welcome (member ID, embed snippet, link to `/widget`); nothing is sent from the server. It shows "no email on file" once you have deleted the address (see below).
 
 From the admin you can also edit members, change their status (suspending needs a private reason), remove them (you must type their name), and read the audit log of everything you did (`/admin/log`, append-only).
 

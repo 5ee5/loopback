@@ -3,6 +3,7 @@ import { loadAdminData } from "@/server/admin-data";
 import { requireAdmin } from "@/server/auth";
 import { AdminShell } from "./admin-shell";
 import { approveApplicationAction, markLiveAction, rejectApplicationAction } from "./actions";
+import { welcomeMailto } from "./applicant-mail";
 import { when } from "./format";
 import { noticeFor } from "./notices";
 
@@ -103,10 +104,20 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
                   <p className="mt-1 break-all text-sm text-muted">{m.url}</p>
                   <p className="mt-1 text-sm text-muted">Member ID: {m.id}</p>
                 </div>
-                <form action={markLiveAction}>
-                  <input type="hidden" name="id" value={m.id} />
-                  <button type="submit" className="btn">mark live</button>
-                </form>
+                <div className="flex flex-wrap items-center gap-4">
+                  {(() => {
+                    const mailto = welcomeMailto(m.contactEmail, m);
+                    return mailto ? (
+                      <a href={mailto} className="btn">email applicant</a>
+                    ) : (
+                      <span className="text-sm text-muted">no email on file</span>
+                    );
+                  })()}
+                  <form action={markLiveAction}>
+                    <input type="hidden" name="id" value={m.id} />
+                    <button type="submit" className="btn">mark live</button>
+                  </form>
+                </div>
               </li>
             ))}
           </ul>
